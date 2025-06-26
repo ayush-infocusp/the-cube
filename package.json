@@ -3,8 +3,8 @@
   "version": "1.0.0",
   "description": "",
   "main": "",
-  "dependencies": {},
   "devDependencies": {
+    "rollup": "^4.44.1",
     "rollup-plugin-babel-minify": "^5.0.0"
   },
   "scripts": {

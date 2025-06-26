@@ -4,16 +4,16 @@ import { Controls } from './Controls.js';
 import { Scrambler } from './Scrambler.js';
 import { Transition } from './Transition.js';
 import { Timer } from './Timer.js';
-import { Preferences } from './Preferences.js';
-import { Confetti } from './Confetti.js';
-import { Scores } from './Scores.js';
+// import { Preferences } from './Preferences.js';
+// import { Confetti } from './Confetti.js';
+// import { Scores } from './Scores.js';
 import { Storage } from './Storage.js';
 import { Themes } from './Themes.js';
-import { ThemeEditor } from './ThemeEditor.js';
-import { States } from './States.js';
+// import { ThemeEditor } from './ThemeEditor.js';
+// import { States } from './States.js';
 // import { Keyboard } from './Keyboard.js';
 
-import { Icons } from './Icons.js';
+// import { Icons } from './Icons.js';
 
 const STATE = {
   Menu: 0,
@@ -74,12 +74,12 @@ class Game {
     this.scrambler = new Scrambler( this );
     this.transition = new Transition( this );
     this.timer = new Timer( this );
-    this.preferences = new Preferences( this );
-    this.scores = new Scores( this );
+    // this.preferences = new Preferences( this );
+    // this.scores = new Scores( this );
     this.storage = new Storage( this );
-    this.confetti = new Confetti( this );
+    // this.confetti = new Confetti( this );
     this.themes = new Themes( this );
-    this.themeEditor = new ThemeEditor( this );
+    // this.themeEditor = new ThemeEditor( this );
 
     this.initActions();
 
@@ -88,12 +88,12 @@ class Game {
     this.saved = false;
 
     this.storage.init();
-    this.preferences.init();
+    // this.preferences.init();
     this.cube.init();
     this.transition.init();
 
     this.storage.loadGame();
-    this.scores.calcStats();
+    // this.scores.calcStats();
 
     setTimeout( () => {
 
@@ -144,7 +144,7 @@ class Game {
 
       if ( this.newGame ) {
         
-        this.timer.start( true );
+        // this.timer.start( true );
         this.newGame = false;
 
       }
@@ -175,7 +175,7 @@ class Game {
 
       if ( this.state === STATE.Theme ) {
 
-        this.themeEditor.resetTheme();
+        // this.themeEditor.resetTheme();
 
       }
       
@@ -197,7 +197,7 @@ class Game {
 
       if ( ! this.saved ) {
 
-        this.scrambler.scramble();
+        // this.scrambler.scramble();
         this.controls.scrambleCube();
         this.newGame = true;
 
@@ -216,7 +216,7 @@ class Game {
 
       setTimeout( () => {
 
-        this.transition.timer( SHOW );
+        // this.transition.timer( SHOW );
         this.transition.buttons( BUTTONS.Playing, BUTTONS.None );
 
       }, this.transition.durations.zoom - 1000 );
@@ -224,7 +224,7 @@ class Game {
       setTimeout( () => {
 
         this.controls.enable();
-        if ( ! this.newGame ) this.timer.start( true )
+        // if ( ! this.newGame ) this.timer.start( true )
 
       }, this.transition.durations.zoom );
 
@@ -237,7 +237,7 @@ class Game {
       this.transition.zoom( STATE.Menu, 0 );
 
       this.controls.disable();
-      if ( ! this.newGame ) this.timer.stop();
+      // if ( ! this.newGame ) this.timer.stop();
       this.transition.timer( HIDE );
 
       setTimeout( () => this.transition.title( SHOW ), this.transition.durations.zoom - 1000 );
@@ -283,15 +283,15 @@ class Game {
 
   theme( show ) {
 
-    this.themeEditor.colorPicker( show );
+    // this.themeEditor.colorPicker( show );
     
     if ( show ) {
 
       if ( this.transition.activeTransitions > 0 ) return;
 
-      this.cube.loadFromData( States[ '3' ][ 'checkerboard' ] );
+      // this.cube.loadFromData( States[ '3' ][ 'checkerboard' ] );
 
-      this.themeEditor.setHSL( null, false );
+      // this.themeEditor.setHSL( null, false );
 
       this.state = STATE.Theme;
 
@@ -371,10 +371,10 @@ class Game {
       this.saved = false;
 
       this.controls.disable();
-      this.timer.stop();
+      // this.timer.stop();
       this.storage.clearGame();
 
-      this.bestTime = this.scores.addScore( this.timer.deltaTime );
+      // this.bestTime = this.scores.addScore( this.timer.deltaTime );
 
       this.transition.zoom( STATE.Menu, 0 );
       this.transition.elevate( SHOW );
@@ -382,7 +382,7 @@ class Game {
       setTimeout( () => {
 
         this.transition.complete( SHOW, this.bestTime )
-        this.confetti.start();
+        // this.confetti.start();
 
       }, 1000 );
 
@@ -391,15 +391,15 @@ class Game {
       this.state = STATE.Stats;
       this.saved = false;
 
-      this.transition.timer( HIDE );
+      // this.transition.timer( HIDE );
       this.transition.complete( HIDE, this.bestTime );
       this.transition.cube( HIDE );
-      this.timer.reset();
+      // this.timer.reset();
 
       setTimeout( () => {
 
         this.cube.reset();
-        this.confetti.stop();
+        // this.confetti.stop();
 
         this.transition.stats( SHOW )
         this.transition.elevate( 0 );

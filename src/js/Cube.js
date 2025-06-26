@@ -106,6 +106,8 @@ class Cube {
 		  	for ( z = 0; z < this.size; z ++ ) {
 
 		  		let position = new THREE.Vector3(first + x, first + y, first + z);
+				//The piece at x=0, y=0, z=0 will have coordinates (-1, -1, -1).
+				// The piece at x=1, y=2, z=0 will have coordinates (0, 1, -1).
 		  		let edges = [];
 
 		  		if ( x == 0 ) edges.push(0);
@@ -114,6 +116,18 @@ class Cube {
 		  		if ( y == m ) edges.push(3);
 		  		if ( z == 0 ) edges.push(4);
 		  		if ( z == m ) edges.push(5);
+
+				//   piece at x=0, y=2, z=2 (top-left-front corner):
+
+				//   position is initialized as (-1 + 0, -1 + 2, -1 + 2) which is (-1, 1, 1).
+				//   The if statements are checked:
+				//   x == 0 is true, so 0 is added to edges.
+				//   x == 2 is false.
+				//   y == 0 is false.
+				//   y == 2 is true, so 3 is added to edges.
+				//   z == 0 is false.
+				//   z == 2 is true, so 5 is added to edges.
+				//   position.edges becomes [0, 3, 5].
 
 		  		position.edges = edges;
 		  		this.positions.push( position );
@@ -133,11 +147,13 @@ class Cube {
 
 		const mainMaterial = new THREE.MeshLambertMaterial();
 
+		//single cube
 		const pieceMesh = new THREE.Mesh(
 			new RoundedBoxGeometry( pieceSize, this.geometry.pieceCornerRadius, 3 ),
 			mainMaterial.clone()
 		);
 
+		//single edge
 		const edgeGeometry = RoundedPlaneGeometry(
 			pieceSize,
 			this.geometry.edgeCornerRoundness,
@@ -146,15 +162,19 @@ class Cube {
 
 		this.positions.forEach( ( position, index ) => {
 
+			//eac cube peice
 			const piece = new THREE.Object3D();
+			//entire cube
 			const pieceCube = pieceMesh.clone();
 			const pieceEdges = [];
 
+			// (-0.5 / 3, -0.5 / 3, -0.5 / 3)
 			piece.position.copy( position.clone().divideScalar( 3 ) );
 			piece.add( pieceCube );
 			piece.name = index;
 			piece.edgesName = '';
 
+			// [0,0,0].[0,2,4]
 			position.edges.forEach( position => {
 
 				const edge = new THREE.Mesh( edgeGeometry, mainMaterial.clone() );
