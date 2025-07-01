@@ -1,7 +1,7 @@
 import minify from 'rollup-plugin-babel-minify';
 
 export default {
-  input: './src/js/Game.js',
+  input: './src/Game.js',
   plugins: [
     minify({ comments: false, sourceMap: false }),
   ],

@@ -1,5 +1,5 @@
 export default {
-  input: './src/js/Game.js',
+  input: './src/Game.js',
   plugins: [],
   output: {
       format: 'iife',
