@@ -178,728 +178,209 @@
 
 	}
 
-	function RoundedBoxGeometry( size, radius, radiusSegments ) {
-
-	  THREE.BufferGeometry.call( this );
-
-	  this.type = 'RoundedBoxGeometry';
-
-	  radiusSegments = ! isNaN( radiusSegments ) ? Math.max( 1, Math.floor( radiusSegments ) ) : 1;
-
-	  var width, height, depth;
-
-	  width = height = depth = size;
-	  radius = size * radius;
-
-	  radius = Math.min( radius, Math.min( width, Math.min( height, Math.min( depth ) ) ) / 2 );
-
-	  var edgeHalfWidth = width / 2 - radius;
-	  var edgeHalfHeight = height / 2 - radius;
-	  var edgeHalfDepth = depth / 2 - radius;
-
-	  this.parameters = {
-	    width: width,
-	    height: height,
-	    depth: depth,
-	    radius: radius,
-	    radiusSegments: radiusSegments
-	  };
-
-	  var rs1 = radiusSegments + 1;
-	  var totalVertexCount = ( rs1 * radiusSegments + 1 ) << 3;
-
-	  var positions = new THREE.BufferAttribute( new Float32Array( totalVertexCount * 3 ), 3 );
-	  var normals = new THREE.BufferAttribute( new Float32Array( totalVertexCount * 3 ), 3 );
-
-	  var cornerVerts = [],
-	    cornerNormals = [];
-	    new THREE.Vector3();
-	    var vertex = new THREE.Vector3(),
-	    vertexPool = [],
-	    normalPool = [],
-	    indices = []
-	  ;
-
-	  var
-	    lastVertex = rs1 * radiusSegments,
-	    cornerVertNumber = rs1 * radiusSegments + 1
-	  ;
-
-	  doVertices();
-	  doFaces();
-	  doCorners();
-	  doHeightEdges();
-	  doWidthEdges();
-	  doDepthEdges();
-
-	  function doVertices() {
-
-	    var cornerLayout = [
-	      new THREE.Vector3( 1, 1, 1 ),
-	      new THREE.Vector3( 1, 1, -1 ),
-	      new THREE.Vector3( -1, 1, -1 ),
-	      new THREE.Vector3( -1, 1, 1 ),
-	      new THREE.Vector3( 1, -1, 1 ),
-	      new THREE.Vector3( 1, -1, -1 ),
-	      new THREE.Vector3( -1, -1, -1 ),
-	      new THREE.Vector3( -1, -1, 1 )
-	    ];
-
-	    for ( var j = 0; j < 8; j ++ ) {
-
-	      cornerVerts.push( [] );
-	      cornerNormals.push( [] );
-
-	    }
-
-	    var PIhalf = Math.PI / 2;
-	    var cornerOffset = new THREE.Vector3( edgeHalfWidth, edgeHalfHeight, edgeHalfDepth );
-
-	    for ( var y = 0; y <= radiusSegments; y ++ ) {
-
-	      var v = y / radiusSegments;
-	      var va = v * PIhalf;
-	      var cosVa = Math.cos( va );
-	      var sinVa = Math.sin( va );
-
-	      if ( y == radiusSegments ) {
-
-	        vertex.set( 0, 1, 0 );
-	        var vert = vertex.clone().multiplyScalar( radius ).add( cornerOffset );
-	        cornerVerts[ 0 ].push( vert );
-	        vertexPool.push( vert );
-	        var norm = vertex.clone();
-	        cornerNormals[ 0 ].push( norm );
-	        normalPool.push( norm );
-	        continue;
-
-	      }
-
-	      for ( var x = 0; x <= radiusSegments; x ++ ) {
-
-	        var u = x / radiusSegments;
-	        var ha = u * PIhalf;
-	        vertex.x = cosVa * Math.cos( ha );
-	        vertex.y = sinVa;
-	        vertex.z = cosVa * Math.sin( ha );
-
-	        var vert = vertex.clone().multiplyScalar( radius ).add( cornerOffset );
-	        cornerVerts[ 0 ].push( vert );
-	        vertexPool.push( vert );
-
-	        var norm = vertex.clone().normalize();
-	        cornerNormals[ 0 ].push( norm );
-	        normalPool.push( norm );
-
-	      }
-
-	    }
-
-	    for ( var i = 1; i < 8; i ++ ) {
-
-	      for ( var j = 0; j < cornerVerts[ 0 ].length; j ++ ) {
-
-	        var vert = cornerVerts[ 0 ][ j ].clone().multiply( cornerLayout[ i ] );
-	        cornerVerts[ i ].push( vert );
-	        vertexPool.push( vert );
-
-	        var norm = cornerNormals[ 0 ][ j ].clone().multiply( cornerLayout[ i ] );
-	        cornerNormals[ i ].push( norm );
-	        normalPool.push( norm );
-
-	      }
-
-	    }
-
-	  }
-
-	  function doCorners() {
-
-	    var flips = [
-	      true,
-	      false,
-	      true,
-	      false,
-	      false,
-	      true,
-	      false,
-	      true
-	    ];
-
-	    var lastRowOffset = rs1 * ( radiusSegments - 1 );
-
-	    for ( var i = 0; i < 8; i ++ ) {
-
-	      var cornerOffset = cornerVertNumber * i;
-
-	      for ( var v = 0; v < radiusSegments - 1; v ++ ) {
-
-	        var r1 = v * rs1;
-	        var r2 = ( v + 1 ) * rs1;
-
-	        for ( var u = 0; u < radiusSegments; u ++ ) {
-
-	          var u1 = u + 1;
-	          var a = cornerOffset + r1 + u;
-	          var b = cornerOffset + r1 + u1;
-	          var c = cornerOffset + r2 + u;
-	          var d = cornerOffset + r2 + u1;
-
-	          if ( ! flips[ i ] ) {
-
-	            indices.push( a );
-	            indices.push( b );
-	            indices.push( c );
-
-	            indices.push( b );
-	            indices.push( d );
-	            indices.push( c );
-
-	          } else {
-
-	            indices.push( a );
-	            indices.push( c );
-	            indices.push( b );
-
-	            indices.push( b );
-	            indices.push( c );
-	            indices.push( d );
-
-	          }
-
-	        }
-
-	      }
-
-	      for ( var u = 0; u < radiusSegments; u ++ ) {
-
-	        var a = cornerOffset + lastRowOffset + u;
-	        var b = cornerOffset + lastRowOffset + u + 1;
-	        var c = cornerOffset + lastVertex;
-
-	        if ( ! flips[ i ] ) {
-
-	          indices.push( a );
-	          indices.push( b );
-	          indices.push( c );
-
-	        } else {
-
-	          indices.push( a );
-	          indices.push( c );
-	          indices.push( b );
-
-	        }
-
-	      }
-
-	    }
-
-	  }
-
-	  function doFaces() {
-
-	    var a = lastVertex;
-	    var b = lastVertex + cornerVertNumber;
-	    var c = lastVertex + cornerVertNumber * 2;
-	    var d = lastVertex + cornerVertNumber * 3;
-
-	    indices.push( a );
-	    indices.push( b );
-	    indices.push( c );
-	    indices.push( a );
-	    indices.push( c );
-	    indices.push( d );
-
-	    a = lastVertex + cornerVertNumber * 4;
-	    b = lastVertex + cornerVertNumber * 5;
-	    c = lastVertex + cornerVertNumber * 6;
-	    d = lastVertex + cornerVertNumber * 7;
-
-	    indices.push( a );
-	    indices.push( c );
-	    indices.push( b );
-	    indices.push( a );
-	    indices.push( d );
-	    indices.push( c );
-
-	    a = 0;
-	    b = cornerVertNumber;
-	    c = cornerVertNumber * 4;
-	    d = cornerVertNumber * 5;
-
-	    indices.push( a );
-	    indices.push( c );
-	    indices.push( b );
-	    indices.push( b );
-	    indices.push( c );
-	    indices.push( d );
-
-	    a = cornerVertNumber * 2;
-	    b = cornerVertNumber * 3;
-	    c = cornerVertNumber * 6;
-	    d = cornerVertNumber * 7;
-
-	    indices.push( a );
-	    indices.push( c );
-	    indices.push( b );
-	    indices.push( b );
-	    indices.push( c );
-	    indices.push( d );
-
-	    a = radiusSegments;
-	    b = radiusSegments + cornerVertNumber * 3;
-	    c = radiusSegments + cornerVertNumber * 4;
-	    d = radiusSegments + cornerVertNumber * 7;
-
-	    indices.push( a );
-	    indices.push( b );
-	    indices.push( c );
-	    indices.push( b );
-	    indices.push( d );
-	    indices.push( c );
-
-	    a = radiusSegments + cornerVertNumber;
-	    b = radiusSegments + cornerVertNumber * 2;
-	    c = radiusSegments + cornerVertNumber * 5;
-	    d = radiusSegments + cornerVertNumber * 6;
-
-	    indices.push( a );
-	    indices.push( c );
-	    indices.push( b );
-	    indices.push( b );
-	    indices.push( c );
-	    indices.push( d );
-
-	  }
-
-	  function doHeightEdges() {
-
-	    for ( var i = 0; i < 4; i ++ ) {
-
-	      var cOffset = i * cornerVertNumber;
-	      var cRowOffset = 4 * cornerVertNumber + cOffset;
-	      var needsFlip = i & 1 === 1;
-
-	      for ( var u = 0; u < radiusSegments; u ++ ) {
-
-	        var u1 = u + 1;
-	        var a = cOffset + u;
-	        var b = cOffset + u1;
-	        var c = cRowOffset + u;
-	        var d = cRowOffset + u1;
-
-	        if ( ! needsFlip ) {
-
-	          indices.push( a );
-	          indices.push( b );
-	          indices.push( c );
-	          indices.push( b );
-	          indices.push( d );
-	          indices.push( c );
-
-	        } else {
-
-	          indices.push( a );
-	          indices.push( c );
-	          indices.push( b );
-	          indices.push( b );
-	          indices.push( c );
-	          indices.push( d );
-
-	        }
-
-	      }
-
-	    }
-
-	  }
-
-	  function doDepthEdges() {
-
-	    var cStarts = [ 0, 2, 4, 6 ];
-	    var cEnds = [ 1, 3, 5, 7 ];
-
-	    for ( var i = 0; i < 4; i ++ ) {
-
-	      var cStart = cornerVertNumber * cStarts[ i ];
-	      var cEnd = cornerVertNumber * cEnds[ i ];
-
-	      var needsFlip = 1 >= i;
-
-	      for ( var u = 0; u < radiusSegments; u ++ ) {
-
-	        var urs1 = u * rs1;
-	        var u1rs1 = ( u + 1 ) * rs1;
-
-	        var a = cStart + urs1;
-	        var b = cStart + u1rs1;
-	        var c = cEnd + urs1;
-	        var d = cEnd + u1rs1;
-
-	        if ( needsFlip ) {
-
-	          indices.push( a );
-	          indices.push( c );
-	          indices.push( b );
-	          indices.push( b );
-	          indices.push( c );
-	          indices.push( d );
-
-	        } else {
-
-	          indices.push( a );
-	          indices.push( b );
-	          indices.push( c );
-	          indices.push( b );
-	          indices.push( d );
-	          indices.push( c );
-
-	        }
-
-	      }
-
-	    }
-
-	  }
-
-	  function doWidthEdges() {
-
-	    var end = radiusSegments - 1;
-
-	    var cStarts = [ 0, 1, 4, 5 ];
-	    var cEnds = [ 3, 2, 7, 6 ];
-	    var needsFlip = [ 0, 1, 1, 0 ];
-
-	    for ( var i = 0; i < 4; i ++ ) {
-
-	      var cStart = cStarts[ i ] * cornerVertNumber;
-	      var cEnd = cEnds[ i ] * cornerVertNumber;
-
-	      for ( var u = 0; u <= end; u ++ ) {
-
-	        var a = cStart + radiusSegments + u * rs1;
-	        var b = cStart + ( u != end ? radiusSegments + ( u + 1 ) * rs1 : cornerVertNumber - 1 );
-
-	        var c = cEnd + radiusSegments + u * rs1;
-	        var d = cEnd + ( u != end ? radiusSegments + ( u + 1 ) * rs1 : cornerVertNumber - 1 );
-
-	        if ( ! needsFlip[ i ] ) {
-
-	          indices.push( a );
-	          indices.push( b );
-	          indices.push( c );
-	          indices.push( b );
-	          indices.push( d );
-	          indices.push( c );
-
-	        } else {
-
-	          indices.push( a );
-	          indices.push( c );
-	          indices.push( b );
-	          indices.push( b );
-	          indices.push( c );
-	          indices.push( d );
-
-	        }
-
-	      }
-
-	    }
-
-	  }
-
-	  var index = 0;
-
-	  for ( var i = 0; i < vertexPool.length; i ++ ) {
-
-	    positions.setXYZ(
-	      index,
-	      vertexPool[ i ].x,
-	      vertexPool[ i ].y,
-	      vertexPool[ i ].z
-	    );
-
-	    normals.setXYZ(
-	      index,
-	      normalPool[ i ].x,
-	      normalPool[ i ].y,
-	      normalPool[ i ].z
-	    );
-
-	    index ++;
-
-	  }
-
-	  this.setIndex( new THREE.BufferAttribute( new Uint16Array( indices ), 1 ) );
-	  this.addAttribute( 'position', positions );
-	  this.addAttribute( 'normal', normals );
-
-	}
-
-	RoundedBoxGeometry.prototype = Object.create( THREE.BufferGeometry.prototype );
-	RoundedBoxGeometry.constructor = RoundedBoxGeometry;
-
-	function RoundedPlaneGeometry( size, radius, depth ) {
-
-	  var x, y, width, height;
-
-	  x = y = - size / 2;
-	  width = height = size;
-	  radius = size * radius;
-
-	  const shape = new THREE.Shape();
-
-	  shape.moveTo( x, y + radius );
-	  shape.lineTo( x, y + height - radius );
-	  shape.quadraticCurveTo( x, y + height, x + radius, y + height );
-	  shape.lineTo( x + width - radius, y + height );
-	  shape.quadraticCurveTo( x + width, y + height, x + width, y + height - radius );
-	  shape.lineTo( x + width, y + radius );
-	  shape.quadraticCurveTo( x + width, y, x + width - radius, y );
-	  shape.lineTo( x + radius, y );
-	  shape.quadraticCurveTo( x, y, x, y + radius );
-
-	  const geometry = new THREE.ExtrudeBufferGeometry(
-	    shape,
-	    { depth: depth, bevelEnabled: false, curveSegments: 3 }
-	  );
-
-	  return geometry;
-
-	}
-
 	class Cube {
-
-		constructor( game ) {
-
-			this.game = game;
-			this.size = 3;
-
-			this.geometry = {
-				pieceCornerRadius: 0.12,
-				edgeCornerRoundness: 0.15,
-				edgeScale: 0.82,
-				edgeDepth: 0.01,
-			};
-
-			this.holder = new THREE.Object3D();
-			this.object = new THREE.Object3D();
-			this.animator = new THREE.Object3D();
-
-			this.holder.add( this.animator );
-			this.animator.add( this.object );
-
-			this.game.world.scene.add( this.holder );
-
-		}
-
-		init() {
-
-			this.cubes = [];
-			this.object.children = [];
-			this.object.add( this.game.controls.group );
-
-			if ( this.size === 2 ) this.scale = 1.25;
-			else if ( this.size === 3 ) this.scale = 1;
-			else if ( this.size > 3 ) this.scale = 3 / this.size;
-
-			this.object.scale.set( this.scale, this.scale, this.scale );
-
-			const controlsScale = this.size === 2 ? 0.825 : 1;
-			this.game.controls.edges.scale.set( controlsScale, controlsScale, controlsScale );
-			
-			this.generatePositions();
-			this.generateModel();
-
-			this.pieces.forEach( piece => {
-
-				this.cubes.push( piece.userData.cube );
-				this.object.add( piece );
-
-			} );
-
-			this.holder.traverse( node => {
-
-				if ( node.frustumCulled ) node.frustumCulled = false;
-
-			} );
-
-			this.updateColors( this.game.themes.getColors() );
-
-			this.sizeGenerated = this.size;
-
-		}
-
-		resize( force = false ) {
-
-			if ( this.size !== this.sizeGenerated || force ) {
-
-				this.size = this.game.preferences.ranges.size.value;
-
-				this.reset();
-				this.init();
-
-				this.game.saved = false;
-				this.game.timer.reset();
-				this.game.storage.clearGame();
-
-			}
-
-		}
-
-		reset() {
-
-			this.game.controls.edges.rotation.set( 0, 0, 0 );
-
-			this.holder.rotation.set( 0, 0, 0 );
-			this.object.rotation.set( 0, 0, 0 );
-			this.animator.rotation.set( 0, 0, 0 );
-
-		}
-
-		generatePositions() {
-
-			const m = this.size - 1;
-			const first = this.size % 2 !== 0
-				? 0 - Math.floor(this.size / 2)
-				: 0.5 - this.size / 2;
-
-			let x, y, z;
-
-			this.positions = [];
-
-			for ( x = 0; x < this.size; x ++ ) {
-				for ( y = 0; y < this.size; y ++ ) {
-			  	for ( z = 0; z < this.size; z ++ ) {
-
-			  		let position = new THREE.Vector3(first + x, first + y, first + z);
-			  		let edges = [];
-
-			  		if ( x == 0 ) edges.push(0);
-			  		if ( x == m ) edges.push(1);
-			  		if ( y == 0 ) edges.push(2);
-			  		if ( y == m ) edges.push(3);
-			  		if ( z == 0 ) edges.push(4);
-			  		if ( z == m ) edges.push(5);
-
-			  		position.edges = edges;
-			  		this.positions.push( position );
-
-			  	}
-			  }
-			}
-
-		}
-
-		generateModel() {
-
-			this.pieces = [];
-			this.edges = [];
-
-			const pieceSize = 1 / 3;
-
-			const mainMaterial = new THREE.MeshLambertMaterial();
-
-			const pieceMesh = new THREE.Mesh(
-				new RoundedBoxGeometry( pieceSize, this.geometry.pieceCornerRadius, 3 ),
-				mainMaterial.clone()
-			);
-
-			const edgeGeometry = RoundedPlaneGeometry(
-				pieceSize,
-				this.geometry.edgeCornerRoundness,
-				this.geometry.edgeDepth
-			);
-
-			this.positions.forEach( ( position, index ) => {
-
-				const piece = new THREE.Object3D();
-				const pieceCube = pieceMesh.clone();
-				const pieceEdges = [];
-
-				piece.position.copy( position.clone().divideScalar( 3 ) );
-				piece.add( pieceCube );
-				piece.name = index;
-				piece.edgesName = '';
-
-				position.edges.forEach( position => {
-
-					const edge = new THREE.Mesh( edgeGeometry, mainMaterial.clone() );
-					const name = [ 'L', 'R', 'D', 'U', 'B', 'F' ][ position ];
-					const distance = pieceSize / 2;
-
-					edge.position.set(
-					  distance * [ -1, 1, 0, 0, 0, 0 ][ position ],
-					  distance * [ 0, 0, -1, 1, 0, 0 ][ position ],
-					  distance * [ 0, 0, 0, 0, -1, 1 ][ position ]
-					);
-
-					edge.rotation.set(
-					  Math.PI / 2 * [ 0, 0, 1, -1, 0, 0 ][ position ],
-					  Math.PI / 2 * [ -1, 1, 0, 0, 2, 0 ][ position ],
-				  	0
-					);
-
-					edge.scale.set(
-						this.geometry.edgeScale,
-						this.geometry.edgeScale,
-						this.geometry.edgeScale
-					);
-
-					edge.name = name;
-
-					piece.add( edge );
-					pieceEdges.push( name );
-					this.edges.push( edge );
-
-				} );
-
-				piece.userData.edges = pieceEdges;
-				piece.userData.cube = pieceCube;
-
-				piece.userData.start = {
-					position: piece.position.clone(),
-					rotation: piece.rotation.clone(),
-				};
-
-				this.pieces.push( piece );
-
-			} );
-
-		}
-
-		updateColors( colors ) {
-
-			if ( typeof this.pieces !== 'object' && typeof this.edges !== 'object' ) return;
-
-	    this.pieces.forEach( piece => piece.userData.cube.material.color.setHex( colors.P ) );
-	    this.edges.forEach( edge => edge.material.color.setHex( colors[ edge.name ] ) );
-
-		}
-
-		loadFromData( data ) {
-
-			this.size = data.size;
-
-			this.reset();
-			this.init();
-
-			this.pieces.forEach( piece => {
-
-	      const index = data.names.indexOf( piece.name );
+	  constructor(game) {
+	    this.game = game;
+	    this.size = 3;
+
+	    this.geometry = {
+	      pieceCornerRadius: 0.12,
+	      edgeCornerRoundness: 0.15,
+	      edgeScale: 0.82,
+	      edgeDepth: 0.01,
+	    };
+
+	    this.holder = new THREE.Object3D();
+	    this.object = new THREE.Object3D();
+	    this.animator = new THREE.Object3D();
+
+	    this.holder.add(this.animator);
+	    this.animator.add(this.object);
+
+	    this.game.world.scene.add(this.holder);
+	  }
+
+	  init() {
+	    this.cubes = [];
+	    this.object.children = [];
+	    this.object.add(this.game.controls.group);
+
+	    if (this.size === 2) this.scale = 1.25;
+	    else if (this.size === 3) this.scale = 1;
+	    else if (this.size > 3) this.scale = 3 / this.size;
+
+	    this.object.scale.set(this.scale, this.scale, this.scale);
+
+	    const controlsScale = this.size === 2 ? 0.825 : 1;
+	    this.game.controls.edges.scale.set(
+	      controlsScale,
+	      controlsScale,
+	      controlsScale
+	    );
+
+	    this.generatePositions();
+	    this.generateModel();
+
+	    this.pieces.forEach((piece) => {
+	      this.cubes.push(piece.userData.cube);
+	      this.object.add(piece);
+	    });
+
+	    this.holder.traverse((node) => {
+	      if (node.frustumCulled) node.frustumCulled = false;
+	    });
+
+	    this.updateColors(this.game.themes.getColors());
+
+	    this.sizeGenerated = this.size;
+	  }
+
+	  resize(force = false) {
+	    if (this.size !== this.sizeGenerated || force) {
+	      this.size = this.game.preferences.ranges.size.value;
+
+	      this.reset();
+	      this.init();
+
+	      this.game.saved = false;
+	      this.game.timer.reset();
+	      this.game.storage.clearGame();
+	    }
+	  }
+
+	  reset() {
+	    this.game.controls.edges.rotation.set(0, 0, 0);
+
+	    this.holder.rotation.set(0, 0, 0);
+	    this.object.rotation.set(0, 0, 0);
+	    this.animator.rotation.set(0, 0, 0);
+	  }
+
+	  generatePositions() {
+	    const m = this.size - 1;
+	    const first =
+	      this.size % 2 !== 0 ? 0 - Math.floor(this.size / 2) : 0.5 - this.size / 2;
+
+	    let x, y, z;
+
+	    this.positions = [];
+
+	    for (x = 0; x < this.size; x++) {
+	      for (y = 0; y < this.size; y++) {
+	        for (z = 0; z < this.size; z++) {
+	          let position = new THREE.Vector3(first + x, first + y, first + z);
+	          let edges = [];
+
+	          if (x == 0) edges.push(0);
+	          if (x == m) edges.push(1);
+	          if (y == 0) edges.push(2);
+	          if (y == m) edges.push(3);
+	          if (z == 0) edges.push(4);
+	          if (z == m) edges.push(5);
+
+	          position.edges = edges;
+	          this.positions.push(position);
+	        }
+	      }
+	    }
+	  }
+
+	  generateModel() {
+	    this.pieces = [];
+	    this.edges = [];
+
+	    const pieceSize = 1 / 3;
+
+	    const mainMaterial = new THREE.MeshLambertMaterial();
+
+	    const pieceMesh = new THREE.Mesh(
+	      new THREE.BoxGeometry(pieceSize, pieceSize, pieceSize),
+	      mainMaterial.clone()
+	    );
+
+	    const edgeGeometry = new THREE.BoxGeometry(
+	      pieceSize,
+	      pieceSize,
+	      this.geometry.edgeDepth
+	    );
+	    this.positions.forEach((position, index) => {
+	      const piece = new THREE.Object3D();
+	      const pieceCube = pieceMesh.clone();
+	      const pieceEdges = [];
+
+	      piece.position.copy(position.clone().divideScalar(3));
+	      piece.add(pieceCube);
+	      piece.name = index;
+	      piece.edgesName = "";
+
+	      position.edges.forEach((position) => {
+	        const edge = new THREE.Mesh(edgeGeometry, mainMaterial.clone());
+	        const name = ["L", "R", "D", "U", "B", "F"][position];
+	        const distance = pieceSize / 2;
+
+	        edge.position.set(
+	          distance * [-1, 1, 0, 0, 0, 0][position],
+	          distance * [0, 0, -1, 1, 0, 0][position],
+	          distance * [0, 0, 0, 0, -1, 1][position]
+	        );
+
+	        edge.rotation.set(
+	          (Math.PI / 2) * [0, 0, 1, -1, 0, 0][position],
+	          (Math.PI / 2) * [-1, 1, 0, 0, 2, 0][position],
+	          0
+	        );
+
+	        edge.scale.set(
+	          this.geometry.edgeScale,
+	          this.geometry.edgeScale,
+	          this.geometry.edgeScale
+	        );
+
+	        edge.name = name;
+
+	        piece.add(edge);
+	        pieceEdges.push(name);
+	        this.edges.push(edge);
+	      });
+
+	      piece.userData.edges = pieceEdges;
+	      piece.userData.cube = pieceCube;
+
+	      piece.userData.start = {
+	        position: piece.position.clone(),
+	        rotation: piece.rotation.clone(),
+	      };
+
+	      this.pieces.push(piece);
+	    });
+	  }
+
+	  updateColors(colors) {
+	    if (typeof this.pieces !== "object" && typeof this.edges !== "object")
+	      return;
+
+	    this.pieces.forEach((piece) =>
+	      piece.userData.cube.material.color.setHex(colors.P)
+	    );
+	    this.edges.forEach((edge) => edge.material.color.setHex(colors[edge.name]));
+	  }
+
+	  loadFromData(data) {
+	    this.size = data.size;
+
+	    this.reset();
+	    this.init();
+
+	    this.pieces.forEach((piece) => {
+	      const index = data.names.indexOf(piece.name);
 
 	      const position = data.positions[index];
 	      const rotation = data.rotations[index];
 
-	      piece.position.set( position.x, position.y, position.z );
-	      piece.rotation.set( rotation.x, rotation.y, rotation.z );
-
-	    } );
-
-		}
-
+	      piece.position.set(position.x, position.y, position.z);
+	      piece.rotation.set(rotation.x, rotation.y, rotation.z);
+	    });
+	  }
 	}
 
 	const Easing = {
@@ -1789,98 +1270,86 @@
 	}
 
 	class Scrambler {
+	  constructor(game) {
+	    this.game = game;
 
-		constructor( game ) {
+	    this.dificulty = 0;
 
-			this.game = game;
+	    this.scrambleLength = {
+	      2: [7, 9, 11],
+	      3: [20, 25, 30],
+	      4: [30, 40, 50],
+	      5: [40, 60, 80],
+	    };
 
-			this.dificulty = 0;
+	    this.moves = [];
+	    this.conveted = [];
+	    this.pring = "";
+	  }
 
-			this.scrambleLength = {
-				2: [ 7, 9, 11 ],
-				3: [ 20, 25, 30 ],
-				4: [ 30, 40, 50 ],
-				5: [ 40, 60, 80 ],
-			};
+	  scramble(scramble) {
+	    let count = 0;
+	    this.moves = typeof scramble !== "undefined" ? scramble.split(" ") : [];
 
-			this.moves = [];
-			this.conveted = [];
-			this.pring = '';
+	    if (this.moves.length < 1) {
+	      this.scrambleLength[this.game.cube.size][this.dificulty];
 
-		}
+	      this.game.cube.size < 4 ? "UDLRFB" : "UuDdLlRrFfBb";
+	      const move = "U'";
+	      while (count < 1) {
+	        // const move =
+	        //   faces[Math.floor(Math.random() * faces.length)] +
+	        //   modifiers[Math.floor(Math.random() * 3)];
 
-		scramble( scramble ) {
+	        // if (count > 0 && move.charAt(0) == this.moves[count - 1].charAt(0))
+	        //   continue;
+	        // if (count > 1 && move.charAt(0) == this.moves[count - 2].charAt(0))
+	        //   continue;
 
-			let count = 0;
-			this.moves = ( typeof scramble !== 'undefined' ) ? scramble.split( ' ' ) : [];
+	        this.moves.push(move);
+	        count++;
+	      }
+	    }
 
-			if ( this.moves.length < 1 ) {
+	    this.callback = () => {};
+	    this.convert();
+	    this.print = this.moves.join(" ");
 
-				const scrambleLength = this.scrambleLength[ this.game.cube.size ][ this.dificulty ];
+	    return this;
+	  }
 
-				const faces = this.game.cube.size < 4 ? 'UDLRFB' : 'UuDdLlRrFfBb';
-				const modifiers = [ "", "'", "2" ];
-				const total = ( typeof scramble === 'undefined' ) ? scrambleLength : scramble;
+	  convert(moves) {
+	    this.converted = [];
 
-				while ( count < total ) {
+	    this.moves.forEach((move) => {
+	      const convertedMove = this.convertMove(move);
+	      const modifier = move.charAt(1);
 
-					const move =
-						faces[ Math.floor( Math.random() * faces.length ) ] +
-						modifiers[ Math.floor( Math.random() * 3 ) ];
+	      this.converted.push(convertedMove);
+	      if (modifier == "2") this.converted.push(convertedMove);
+	    });
+	  }
 
-					if ( count > 0 && move.charAt( 0 ) == this.moves[ count - 1 ].charAt( 0 ) ) continue;
-					if ( count > 1 && move.charAt( 0 ) == this.moves[ count - 2 ].charAt( 0 ) ) continue;
+	  convertMove(move) {
+	    const face = move.charAt(0);
+	    const modifier = move.charAt(1);
 
-					this.moves.push( move );
-					count ++;
+	    const axis = { D: "y", U: "y", L: "x", R: "x", F: "z", B: "z" }[
+	      face.toUpperCase()
+	    ];
+	    let row = { D: -1, U: 1, L: -1, R: 1, F: 1, B: -1 }[face.toUpperCase()];
 
-				}
+	    if (this.game.cube.size > 3 && face !== face.toLowerCase()) row = row * 2;
 
-			}
+	    const position = new THREE.Vector3();
+	    position[
+	      { D: "y", U: "y", L: "x", R: "x", F: "z", B: "z" }[face.toUpperCase()]
+	    ] = row;
 
-			this.callback = () => {};
-			this.convert();
-			this.print = this.moves.join( ' ' );
+	    const angle = (Math.PI / 2) * -row * (modifier == "'" ? -1 : 1);
 
-			return this;
-
-		}
-
-		convert( moves ) {
-
-			this.converted = [];
-
-			this.moves.forEach( move => {
-
-				const convertedMove = this.convertMove( move );
-				const modifier = move.charAt( 1 );
-
-				this.converted.push( convertedMove );
-				if ( modifier == "2" ) this.converted.push( convertedMove );
-
-			} );
-
-		}
-
-		convertMove( move ) {
-
-			const face = move.charAt( 0 );
-			const modifier = move.charAt( 1 );
-
-			const axis = { D: 'y', U: 'y', L: 'x', R: 'x', F: 'z', B: 'z' }[ face.toUpperCase() ];
-			let row = { D: -1, U: 1, L: -1, R: 1, F: 1, B: -1 }[ face.toUpperCase() ];
-
-			if ( this.game.cube.size > 3 && face !== face.toLowerCase() ) row = row * 2;
-
-			const position = new THREE.Vector3();
-			position[ { D: 'y', U: 'y', L: 'x', R: 'x', F: 'z', B: 'z' }[ face.toUpperCase() ] ] = row;
-
-			const angle = ( Math.PI / 2 ) * - row * ( ( modifier == "'" ) ? -1 : 1 );
-
-			return { position, axis, angle, name: move };
-
-		}
-
+	    return { position, axis, angle, name: move };
+	  }
 	}
 
 	class Transition {
@@ -2707,231 +2176,6 @@
 
 	}
 
-	class Confetti {
-
-	  constructor( game ) {
-
-	    this.game = game;
-	    this.started = 0;
-
-	    this.options = {
-	      speed: { min: 0.0011, max: 0.0022 },
-	      revolution: { min: 0.01, max: 0.05 },
-	      size: { min: 0.1, max: 0.15 },
-	      colors: [ 0x41aac8, 0x82ca38, 0xffef48, 0xef3923, 0xff8c0a ],
-	    };
-
-	    this.geometry = new THREE.PlaneGeometry( 1, 1 );
-	    this.material = new THREE.MeshLambertMaterial( { side: THREE.DoubleSide } );
-
-	    this.holders = [
-	      new ConfettiStage( this.game, this, 1, 20 ),
-	      new ConfettiStage( this.game, this, -1, 30 ),
-	    ];
-
-	  }
-
-	  start() {
-
-	    if ( this.started > 0 ) return;
-
-	    this.holders.forEach( holder => {
-
-	      this.game.world.scene.add( holder.holder );
-	      holder.start();
-	      this.started ++;
-
-	    } );
-
-	  }
-
-	  stop() {
-
-	    if ( this.started == 0 ) return;
-
-	    this.holders.forEach( holder => {
-
-	      holder.stop( () => {
-
-	        this.game.world.scene.remove( holder.holder );
-	        this.started --;
-
-	      } );
-
-	    } );
-
-	  }
-
-	  updateColors( colors ) {
-
-	    this.holders.forEach( holder => {
-
-	      holder.options.colors.forEach( ( color, index ) => {
-
-	        holder.options.colors[ index ] = colors[ [ 'D', 'F', 'R', 'B', 'L' ][ index ] ];
-
-	      } );
-
-	    } );
-
-	  }
-
-	}
-
-	class ConfettiStage extends Animation {
-
-	  constructor( game, parent, distance, count ) {
-
-	    super( false );
-
-	    this.game = game;
-	    this.parent = parent;
-
-	    this.distanceFromCube = distance;
-
-	    this.count = count;
-	    this.particles = [];
-
-	    this.holder = new THREE.Object3D();
-	    this.holder.rotation.copy( this.game.world.camera.rotation );
-
-	    this.object = new THREE.Object3D();
-	    this.holder.add( this.object );
-
-	    this.resizeViewport = this.resizeViewport.bind( this );
-	    this.game.world.onResize.push( this.resizeViewport );
-	    this.resizeViewport();    
-
-	    this.geometry = this.parent.geometry;
-	    this.material = this.parent.material;
-
-	    this.options = this.parent.options;
-
-	    let i = this.count;
-	    while ( i-- ) this.particles.push( new Particle( this ) );
-
-	  }
-
-	  start() {
-
-	    this.time = performance.now();
-	    this.playing = true;
-
-	    let i = this.count;
-	    while ( i-- ) this.particles[ i ].reset();
-
-	    super.start();
-
-	  }
-
-	  stop( callback ) {
-
-	    this.playing = false;
-	    this.completed = 0;
-	    this.callback = callback;
-
-	  }
-
-	  reset() {
-
-	    super.stop();
-
-	    this.callback();
-
-	  }
-
-	  update() {
-
-	    const now = performance.now();
-	    const delta = now - this.time;
-	    this.time = now;
-
-	    let i = this.count;
-
-	    while ( i-- )
-	      if ( ! this.particles[ i ].completed ) this.particles[ i ].update( delta );
-
-	    if ( ! this.playing && this.completed == this.count ) this.reset();
-
-	  }
-
-	  resizeViewport() {
-
-	    const fovRad = this.game.world.camera.fov * THREE.Math.DEG2RAD;
-
-	    this.height = 2 * Math.tan( fovRad / 2 ) * ( this.game.world.camera.position.length() - this.distanceFromCube );
-	    this.width = this.height * this.game.world.camera.aspect;
-
-	    const scale = 1 / this.game.transition.data.cameraZoom;
-
-	    this.width *= scale;
-	    this.height *= scale;
-
-	    this.object.position.z = this.distanceFromCube;
-	    this.object.position.y = this.height / 2;
-
-	  }
-	  
-	}
-
-	class Particle {
-
-	  constructor( confetti ) {
-
-	    this.confetti = confetti;
-	    this.options = this.confetti.options;
-
-	    this.velocity = new THREE.Vector3();
-	    this.force = new THREE.Vector3();
-
-	    this.mesh = new THREE.Mesh( this.confetti.geometry, this.confetti.material.clone() );
-	    this.confetti.object.add( this.mesh );
-
-	    this.size = THREE.Math.randFloat( this.options.size.min, this.options.size.max );
-	    this.mesh.scale.set( this.size, this.size, this.size );
-
-	    return this;
-
-	  }
-
-	  reset( randomHeight = true ) {
-
-	    this.completed = false;
-
-	    this.color = new THREE.Color( this.options.colors[ Math.floor( Math.random() * this.options.colors.length ) ] );
-	    this.mesh.material.color.set( this.color );
-
-	    this.speed = THREE.Math.randFloat( this.options.speed.min, this.options.speed.max ) * -1;
-	    this.mesh.position.x = THREE.Math.randFloat( - this.confetti.width / 2, this.confetti.width / 2 );
-	    this.mesh.position.y = ( randomHeight )
-	      ? THREE.Math.randFloat( this.size, this.confetti.height + this.size )
-	      : this.size;
-
-	    this.revolutionSpeed = THREE.Math.randFloat( this.options.revolution.min, this.options.revolution.max );
-	    this.revolutionAxis = [ 'x', 'y', 'z' ][ Math.floor( Math.random() * 3 ) ];
-	    this.mesh.rotation.set( Math.random() * Math.PI / 3, Math.random() * Math.PI / 3, Math.random() * Math.PI / 3 );
-
-	  }
-
-	  stop() {
-
-	    this.completed = true;
-	    this.confetti.completed ++;
-
-	  }
-
-	  update( delta ) {
-
-	    this.mesh.position.y += this.speed * delta;
-	    this.mesh.rotation[ this.revolutionAxis ] += this.revolutionSpeed;
-
-	    if ( this.mesh.position.y < - this.confetti.height - this.size )
-	      ( this.confetti.playing ) ? this.reset( false ) : this.stop();
-
-	  }
-
-	}
-
 	class Scores {
 
 	  constructor( game ) {
@@ -3239,9 +2483,7 @@
 	}
 
 	class Themes {
-
-	  constructor( game ) {
-
+	  constructor(game) {
 	    this.game = game;
 	    this.theme = null;
 
@@ -3274,7 +2516,7 @@
 	        B: 0xbe6f62,
 	        L: 0x849f5d,
 	        P: 0x08101a,
-	        G: 0xE7C48D,
+	        G: 0xe7c48d,
 	      },
 	      camo: {
 	        U: 0xfff6eb,
@@ -3284,7 +2526,7 @@
 	        B: 0x805831,
 	        L: 0x37431d,
 	        P: 0x08101a,
-	        G: 0xBFB672,
+	        G: 0xbfb672,
 	      },
 	      rain: {
 	        U: 0xfafaff,
@@ -3298,37 +2540,30 @@
 	      },
 	    };
 
-	    this.colors = JSON.parse( JSON.stringify( this.defaults ) );
-
+	    this.colors = JSON.parse(JSON.stringify(this.defaults));
 	  }
 
 	  getColors() {
-
-	    return this.colors[ this.theme ];
-
+	    return this.colors[this.theme];
 	  }
 
-	  setTheme( theme = false, force = false ) {
-
-	    if ( theme === this.theme && force === false ) return;
-	    if ( theme !== false ) this.theme = theme;
+	  setTheme(theme = false, force = false) {
+	    if (theme === this.theme && force === false) return;
+	    if (theme !== false) this.theme = theme;
 
 	    const colors = this.getColors();
 
-	    this.game.dom.prefs.querySelectorAll( '.range__handle div' ).forEach( range => {
+	    this.game.dom.prefs
+	      .querySelectorAll(".range__handle div")
+	      .forEach((range) => {
+	        range.style.background = "#" + colors.R.toString(16).padStart(6, "0");
+	      });
 
-	      range.style.background = '#' + colors.R.toString(16).padStart(6, '0');
+	    this.game.cube.updateColors(colors);
 
-	    } );
-
-	    this.game.cube.updateColors( colors );
-
-	    this.game.confetti.updateColors( colors );
-
-	    this.game.dom.back.style.background = '#' + colors.G.toString(16).padStart(6, '0');
-
+	    this.game.dom.back.style.background =
+	      "#" + colors.G.toString(16).padStart(6, "0");
 	  }
-
 	}
 
 	class ThemeEditor {
@@ -3690,12 +2925,12 @@
 	};
 
 	const BUTTONS = {
-	  Menu: [ 'stats', 'prefs' ],
-	  Playing: [ 'back' ],
+	  Menu: ["stats", "prefs"],
+	  Playing: ["back"],
 	  Complete: [],
 	  Stats: [],
-	  Prefs: [ 'back', 'theme' ],
-	  Theme: [ 'back', 'reset' ],
+	  Prefs: ["back", "theme"],
+	  Theme: ["back", "reset"],
 	  None: [],
 	};
 
@@ -3703,45 +2938,42 @@
 	const HIDE = false;
 
 	class Game {
-
 	  constructor() {
-
 	    this.dom = {
-	      ui: document.querySelector( '.ui' ),
-	      game: document.querySelector( '.ui__game' ),
-	      back: document.querySelector( '.ui__background' ),
-	      prefs: document.querySelector( '.ui__prefs' ),
-	      theme: document.querySelector( '.ui__theme' ),
-	      stats: document.querySelector( '.ui__stats' ),
+	      ui: document.querySelector(".ui"),
+	      game: document.querySelector(".ui__game"),
+	      back: document.querySelector(".ui__background"),
+	      prefs: document.querySelector(".ui__prefs"),
+	      theme: document.querySelector(".ui__theme"),
+	      stats: document.querySelector(".ui__stats"),
 	      texts: {
-	        title: document.querySelector( '.text--title' ),
-	        note: document.querySelector( '.text--note' ),
-	        timer: document.querySelector( '.text--timer' ),
-	        complete: document.querySelector( '.text--complete' ),
-	        best: document.querySelector( '.text--best-time' ),
-	        theme: document.querySelector( '.text--theme' ),
+	        title: document.querySelector(".text--title"),
+	        note: document.querySelector(".text--note"),
+	        timer: document.querySelector(".text--timer"),
+	        complete: document.querySelector(".text--complete"),
+	        best: document.querySelector(".text--best-time"),
+	        theme: document.querySelector(".text--theme"),
 	      },
 	      buttons: {
-	        prefs: document.querySelector( '.btn--prefs' ),
-	        back: document.querySelector( '.btn--back' ),
-	        stats: document.querySelector( '.btn--stats' ),
-	        reset: document.querySelector( '.btn--reset' ),
-	        theme: document.querySelector( '.btn--theme' ),
+	        prefs: document.querySelector(".btn--prefs"),
+	        back: document.querySelector(".btn--back"),
+	        stats: document.querySelector(".btn--stats"),
+	        reset: document.querySelector(".btn--reset"),
+	        theme: document.querySelector(".btn--theme"),
 	      },
 	    };
 
-	    this.world = new World( this );
-	    this.cube = new Cube( this );
-	    this.controls = new Controls( this );
-	    this.scrambler = new Scrambler( this );
-	    this.transition = new Transition( this );
-	    this.timer = new Timer( this );
-	    this.preferences = new Preferences( this );
-	    this.scores = new Scores( this );
-	    this.storage = new Storage( this );
-	    this.confetti = new Confetti( this );
-	    this.themes = new Themes( this );
-	    this.themeEditor = new ThemeEditor( this );
+	    this.world = new World(this);
+	    this.cube = new Cube(this);
+	    this.controls = new Controls(this);
+	    this.scrambler = new Scrambler(this);
+	    this.transition = new Transition(this);
+	    this.timer = new Timer(this);
+	    this.preferences = new Preferences(this);
+	    this.scores = new Scores(this);
+	    this.storage = new Storage(this);
+	    this.themes = new Themes(this);
+	    this.themeEditor = new ThemeEditor(this);
 
 	    this.initActions();
 
@@ -3757,277 +2989,223 @@
 	    this.storage.loadGame();
 	    this.scores.calcStats();
 
-	    setTimeout( () => {
-
+	    setTimeout(() => {
 	      this.transition.float();
-	      this.transition.cube( SHOW );
+	      this.transition.cube(SHOW);
 
-	      setTimeout( () => this.transition.title( SHOW ), 700 );
-	      setTimeout( () => this.transition.buttons( BUTTONS.Menu, BUTTONS.None ), 1000 );
-
-	    }, 500 );
-
+	      setTimeout(() => this.transition.title(SHOW), 700);
+	      setTimeout(
+	        () => this.transition.buttons(BUTTONS.Menu, BUTTONS.None),
+	        1000
+	      );
+	    }, 500);
 	  }
 
 	  initActions() {
-
 	    let tappedTwice = false;
 
-	    this.dom.game.addEventListener( 'click', event => {
+	    this.dom.game.addEventListener(
+	      "click",
+	      (event) => {
+	        if (this.transition.activeTransitions > 0) return;
+	        if (this.state === STATE.Playing) return;
 
-	      if ( this.transition.activeTransitions > 0 ) return;
-	      if ( this.state === STATE.Playing ) return;
+	        if (this.state === STATE.Menu) {
+	          if (!tappedTwice) {
+	            tappedTwice = true;
+	            setTimeout(() => (tappedTwice = false), 300);
+	            return false;
+	          }
 
-	      if ( this.state === STATE.Menu ) {
-
-	        if ( ! tappedTwice ) {
-
-	          tappedTwice = true;
-	          setTimeout( () => tappedTwice = false, 300 );
-	          return false;
-
+	          this.game(SHOW);
+	        } else if (this.state === STATE.Complete) {
+	          this.complete(HIDE);
+	        } else if (this.state === STATE.Stats) {
+	          this.stats(HIDE);
 	        }
-
-	        this.game( SHOW );
-
-	      } else if ( this.state === STATE.Complete ) {
-
-	        this.complete( HIDE );
-
-	      } else if ( this.state === STATE.Stats ) {
-
-	        this.stats( HIDE );
-
-	      } 
-
-	    }, false );
+	      },
+	      false
+	    );
 
 	    this.controls.onMove = () => {
-
-	      if ( this.newGame ) {
-	        
-	        this.timer.start( true );
+	      if (this.newGame) {
+	        this.timer.start(true);
 	        this.newGame = false;
-
 	      }
-
 	    };
 
-	    this.dom.buttons.back.onclick = event => {
+	    this.dom.buttons.back.onclick = (event) => {
+	      if (this.transition.activeTransitions > 0) return;
 
-	      if ( this.transition.activeTransitions > 0 ) return;
-
-	      if ( this.state === STATE.Playing ) {
-
-	        this.game( HIDE );
-
-	      } else if ( this.state === STATE.Prefs ) {
-
-	        this.prefs( HIDE );
-
-	      } else if ( this.state === STATE.Theme ) {
-
-	        this.theme( HIDE );
-
+	      if (this.state === STATE.Playing) {
+	        this.game(HIDE);
+	      } else if (this.state === STATE.Prefs) {
+	        this.prefs(HIDE);
+	      } else if (this.state === STATE.Theme) {
+	        this.theme(HIDE);
 	      }
-
 	    };
 
-	    this.dom.buttons.reset.onclick = event => {
-
-	      if ( this.state === STATE.Theme ) {
-
+	    this.dom.buttons.reset.onclick = (event) => {
+	      if (this.state === STATE.Theme) {
 	        this.themeEditor.resetTheme();
-
 	      }
-	      
 	    };
 
-	    this.dom.buttons.prefs.onclick = event => this.prefs( SHOW );
+	    this.dom.buttons.prefs.onclick = (event) => this.prefs(SHOW);
 
-	    this.dom.buttons.theme.onclick = event => this.theme( SHOW );
+	    this.dom.buttons.theme.onclick = (event) => this.theme(SHOW);
 
-	    this.dom.buttons.stats.onclick = event => this.stats( SHOW );
+	    this.dom.buttons.stats.onclick = (event) => this.stats(SHOW);
 
-	    this.controls.onSolved = () => this.complete( SHOW );
-
+	    this.controls.onSolved = () => this.complete(SHOW);
 	  }
 
-	  game( show ) {
-
-	    if ( show ) {
-
-	      if ( ! this.saved ) {
-
+	  game(show) {
+	    if (show) {
+	      if (!this.saved) {
 	        this.scrambler.scramble();
 	        this.controls.scrambleCube();
 	        this.newGame = true;
-
 	      }
 
-	      const duration = this.saved ? 0 :
-	        this.scrambler.converted.length * ( this.controls.flipSpeeds[0] + 10 );
+	      const duration = this.saved
+	        ? 0
+	        : this.scrambler.converted.length * (this.controls.flipSpeeds[0] + 10);
 
 	      this.state = STATE.Playing;
 	      this.saved = true;
 
-	      this.transition.buttons( BUTTONS.None, BUTTONS.Menu );
+	      this.transition.buttons(BUTTONS.None, BUTTONS.Menu);
 
-	      this.transition.zoom( STATE.Playing, duration );
-	      this.transition.title( HIDE );
+	      this.transition.zoom(STATE.Playing, duration);
+	      this.transition.title(HIDE);
 
-	      setTimeout( () => {
+	      setTimeout(() => {
+	        this.transition.timer(SHOW);
+	        this.transition.buttons(BUTTONS.Playing, BUTTONS.None);
+	      }, this.transition.durations.zoom - 1000);
 
-	        this.transition.timer( SHOW );
-	        this.transition.buttons( BUTTONS.Playing, BUTTONS.None );
-
-	      }, this.transition.durations.zoom - 1000 );
-
-	      setTimeout( () => {
-
+	      setTimeout(() => {
 	        this.controls.enable();
-	        if ( ! this.newGame ) this.timer.start( true );
-
-	      }, this.transition.durations.zoom );
-
+	        if (!this.newGame) this.timer.start(true);
+	      }, this.transition.durations.zoom);
 	    } else {
-
 	      this.state = STATE.Menu;
 
-	      this.transition.buttons( BUTTONS.Menu, BUTTONS.Playing );
+	      this.transition.buttons(BUTTONS.Menu, BUTTONS.Playing);
 
-	      this.transition.zoom( STATE.Menu, 0 );
+	      this.transition.zoom(STATE.Menu, 0);
 
 	      this.controls.disable();
-	      if ( ! this.newGame ) this.timer.stop();
-	      this.transition.timer( HIDE );
+	      if (!this.newGame) this.timer.stop();
+	      this.transition.timer(HIDE);
 
-	      setTimeout( () => this.transition.title( SHOW ), this.transition.durations.zoom - 1000 );
+	      setTimeout(
+	        () => this.transition.title(SHOW),
+	        this.transition.durations.zoom - 1000
+	      );
 
 	      this.playing = false;
 	      this.controls.disable();
-
 	    }
-
 	  }
 
-	  prefs( show ) {
-
-	    if ( show ) {
-
-	      if ( this.transition.activeTransitions > 0 ) return;
+	  prefs(show) {
+	    if (show) {
+	      if (this.transition.activeTransitions > 0) return;
 
 	      this.state = STATE.Prefs;
 
-	      this.transition.buttons( BUTTONS.Prefs, BUTTONS.Menu );
+	      this.transition.buttons(BUTTONS.Prefs, BUTTONS.Menu);
 
-	      this.transition.title( HIDE );
-	      this.transition.cube( HIDE );
+	      this.transition.title(HIDE);
+	      this.transition.cube(HIDE);
 
-	      setTimeout( () => this.transition.preferences( SHOW ), 1000 );
-
+	      setTimeout(() => this.transition.preferences(SHOW), 1000);
 	    } else {
-
 	      this.cube.resize();
 
 	      this.state = STATE.Menu;
 
-	      this.transition.buttons( BUTTONS.Menu, BUTTONS.Prefs );
+	      this.transition.buttons(BUTTONS.Menu, BUTTONS.Prefs);
 
-	      this.transition.preferences( HIDE );
+	      this.transition.preferences(HIDE);
 
-	      setTimeout( () => this.transition.cube( SHOW ), 500 );
-	      setTimeout( () => this.transition.title( SHOW ), 1200 );
-
+	      setTimeout(() => this.transition.cube(SHOW), 500);
+	      setTimeout(() => this.transition.title(SHOW), 1200);
 	    }
-
 	  }
 
-	  theme( show ) {
+	  theme(show) {
+	    this.themeEditor.colorPicker(show);
 
-	    this.themeEditor.colorPicker( show );
-	    
-	    if ( show ) {
+	    if (show) {
+	      if (this.transition.activeTransitions > 0) return;
 
-	      if ( this.transition.activeTransitions > 0 ) return;
+	      this.cube.loadFromData(States["3"]["checkerboard"]);
 
-	      this.cube.loadFromData( States[ '3' ][ 'checkerboard' ] );
-
-	      this.themeEditor.setHSL( null, false );
+	      this.themeEditor.setHSL(null, false);
 
 	      this.state = STATE.Theme;
 
-	      this.transition.buttons( BUTTONS.Theme, BUTTONS.Prefs );
+	      this.transition.buttons(BUTTONS.Theme, BUTTONS.Prefs);
 
-	      this.transition.preferences( HIDE );
+	      this.transition.preferences(HIDE);
 
-	      setTimeout( () => this.transition.cube( SHOW, true ), 500 );
-	      setTimeout( () => this.transition.theming( SHOW ), 1000 );
-
+	      setTimeout(() => this.transition.cube(SHOW, true), 500);
+	      setTimeout(() => this.transition.theming(SHOW), 1000);
 	    } else {
-
 	      this.state = STATE.Prefs;
 
-	      this.transition.buttons( BUTTONS.Prefs, BUTTONS.Theme );
+	      this.transition.buttons(BUTTONS.Prefs, BUTTONS.Theme);
 
-	      this.transition.cube( HIDE, true );
-	      this.transition.theming( HIDE );
+	      this.transition.cube(HIDE, true);
+	      this.transition.theming(HIDE);
 
-	      setTimeout( () => this.transition.preferences( SHOW ), 1000 );
-	      setTimeout( () => {
+	      setTimeout(() => this.transition.preferences(SHOW), 1000);
+	      setTimeout(() => {
+	        const gameCubeData = JSON.parse(
+	          localStorage.getItem("theCube_savedState")
+	        );
 
-	        const gameCubeData = JSON.parse( localStorage.getItem( 'theCube_savedState' ) );
-
-	        if ( !gameCubeData ) {
-
-	          this.cube.resize( true );
+	        if (!gameCubeData) {
+	          this.cube.resize(true);
 	          return;
-
 	        }
 
-	        this.cube.loadFromData( gameCubeData );
-
-	      }, 1500 );
-
+	        this.cube.loadFromData(gameCubeData);
+	      }, 1500);
 	    }
-
 	  }
 
-	  stats( show ) {
-
-	    if ( show ) {
-
-	      if ( this.transition.activeTransitions > 0 ) return;
+	  stats(show) {
+	    if (show) {
+	      if (this.transition.activeTransitions > 0) return;
 
 	      this.state = STATE.Stats;
 
-	      this.transition.buttons( BUTTONS.Stats, BUTTONS.Menu );
+	      this.transition.buttons(BUTTONS.Stats, BUTTONS.Menu);
 
-	      this.transition.title( HIDE );
-	      this.transition.cube( HIDE );
+	      this.transition.title(HIDE);
+	      this.transition.cube(HIDE);
 
-	      setTimeout( () => this.transition.stats( SHOW ), 1000 );
-
+	      setTimeout(() => this.transition.stats(SHOW), 1000);
 	    } else {
-
 	      this.state = STATE.Menu;
 
-	      this.transition.buttons( BUTTONS.Menu, BUTTONS.None );
+	      this.transition.buttons(BUTTONS.Menu, BUTTONS.None);
 
-	      this.transition.stats( HIDE );
+	      this.transition.stats(HIDE);
 
-	      setTimeout( () => this.transition.cube( SHOW ), 500 );
-	      setTimeout( () => this.transition.title( SHOW ), 1200 );
-
+	      setTimeout(() => this.transition.cube(SHOW), 500);
+	      setTimeout(() => this.transition.title(SHOW), 1200);
 	    }
-
 	  }
 
-	  complete( show ) {
-
-	    if ( show ) {
-
-	      this.transition.buttons( BUTTONS.Complete, BUTTONS.Playing );
+	  complete(show) {
+	    if (show) {
+	      this.transition.buttons(BUTTONS.Complete, BUTTONS.Playing);
 
 	      this.state = STATE.Complete;
 	      this.saved = false;
@@ -4036,44 +3214,33 @@
 	      this.timer.stop();
 	      this.storage.clearGame();
 
-	      this.bestTime = this.scores.addScore( this.timer.deltaTime );
+	      this.bestTime = this.scores.addScore(this.timer.deltaTime);
 
-	      this.transition.zoom( STATE.Menu, 0 );
-	      this.transition.elevate( SHOW );
+	      this.transition.zoom(STATE.Menu, 0);
+	      this.transition.elevate(SHOW);
 
-	      setTimeout( () => {
-
-	        this.transition.complete( SHOW, this.bestTime );
-	        this.confetti.start();
-
-	      }, 1000 );
-
+	      setTimeout(() => {
+	        this.transition.complete(SHOW, this.bestTime);
+	      }, 1000);
 	    } else {
-
 	      this.state = STATE.Stats;
 	      this.saved = false;
 
-	      this.transition.timer( HIDE );
-	      this.transition.complete( HIDE, this.bestTime );
-	      this.transition.cube( HIDE );
+	      this.transition.timer(HIDE);
+	      this.transition.complete(HIDE, this.bestTime);
+	      this.transition.cube(HIDE);
 	      this.timer.reset();
 
-	      setTimeout( () => {
-
+	      setTimeout(() => {
 	        this.cube.reset();
-	        this.confetti.stop();
 
-	        this.transition.stats( SHOW );
-	        this.transition.elevate( 0 );
-
-	      }, 1000 );
+	        this.transition.stats(SHOW);
+	        this.transition.elevate(0);
+	      }, 1000);
 
 	      return false;
-
 	    }
-
 	  }
-
 	}
 
 	window.game = new Game();
