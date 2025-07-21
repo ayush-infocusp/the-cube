@@ -44,6 +44,190 @@ class Game {
 
   constructor() {
 
+    // const COLORS = [
+    //   "#ff0000", // red
+    //   "#00ff00", // green
+    //   "#0000ff", // blue
+    //   "#ffff00", // yellow
+    //   "#ff8000", // orange
+    //   "#ffffff", // white
+    // ];
+
+    // let selectedColor = COLORS[0];
+
+    // const faceSelector = document.getElementById('faceSelector');
+    // const colorButtons = document.getElementById('colorButtons');
+    // const cubeFace = document.getElementById('cubeFace');
+    // const output = document.getElementById('output');
+    // const printButton = document.getElementById('printButton');
+
+    // document.querySelectorAll('select, input[type="color"]').forEach(el =>
+    //   Object.assign(el.style, {
+    //     margin: '10px',
+    //     padding: '5px',
+    //     width: '240px',
+    //     height: '100px',
+    //     fontSize: '40px'
+    //   })
+    // );
+
+    // const cubeState = {
+    //   front: Array(9).fill("#555"),
+    //   back: Array(9).fill("#555"),
+    //   left: Array(9).fill("#555"),
+    //   right: Array(9).fill("#555"),
+    //   top: Array(9).fill("#555"),
+    //   bottom: Array(9).fill("#555"),
+    // };
+
+    // let currentFace = faceSelector.value;
+    // const cuboids = [];
+
+    //  // Create color selection buttons
+    //  COLORS.forEach(color => {
+    //   const btn = document.createElement("button");
+    //   btn.style.backgroundColor = color;
+    //   btn.style.width = "30px";
+    //   btn.style.height = "30px";
+    //   btn.style.border = "2px solid white";
+    //   btn.style.marginRight = "5px";
+    //   btn.style.cursor = "pointer";
+    //   btn.addEventListener("click", () => {
+    //     selectedColor = color;
+    //     // Visually indicate selected color
+    //     Array.from(colorButtons.children).forEach(b => b.style.outline = "none");
+    //     btn.style.outline = "2px solid white";
+    //   });
+    //   colorButtons.appendChild(btn);
+    // });
+    // colorButtons.children[0].style.outline = "2px solid white"; // default selection
+
+    // // Create cuboid grid
+    // for (let i = 0; i < 9; i++) {
+    //   const cuboid = document.createElement('div');
+    //   cuboid.style.backgroundColor = '#555';
+    //   cuboid.style.border = '2px solid #222';
+    //   cuboid.style.width = '80px';
+    //   cuboid.style.height = '80px';
+    //   cuboid.style.cursor = 'pointer';
+    //   cuboid.style.transition = 'background-color 0.3s';
+
+    //   cuboid.addEventListener('click', () => {
+    //     console.log("he;llo", cuboid.style.backgroundColor);
+    //     if(cubeState[currentFace][i] !== "#555"){
+    //       cuboid.style.backgroundColor = "#555"
+    //       cubeState[currentFace][i] = "#555";
+    //       return;
+    //     }
+    //     cuboid.style.backgroundColor = selectedColor;
+    //     cubeState[currentFace][i] = selectedColor;
+    //   });
+
+    //   cubeFace.appendChild(cuboid);
+    //   cuboids.push(cuboid);
+    // }
+
+    // // Style container grid
+    // Object.assign(cubeFace.style, {
+    //   display: 'grid',
+    //   gridTemplateColumns: 'repeat(3, 80px)',
+    //   gridTemplateRows: 'repeat(3, 80px)',
+    //   gap: '5px',
+    //   backgroundColor: '#333',
+    //   padding: '10px',
+    //   borderRadius: '10px'
+    // });
+
+    // Object.assign(document.body.style, {
+    //   fontFamily: 'sans-serif',
+    //   background: '#111',
+    //   color: 'white',
+    //   display: 'flex',
+    //   flexDirection: 'column',
+    //   alignItems: 'center',
+    //   paddingTop: '30px',
+    //   margin: '0'
+    // });
+
+    // Object.assign(document.querySelector('.controls').style, {
+    //   marginBottom: '20px'
+    // });
+
+    // Object.assign(output.style, {
+    //   marginTop: '20px',
+    //   maxWidth: '400px',
+    //   whiteSpace: 'pre-wrap',
+    //   backgroundColor: '#222',
+    //   padding: '10px',
+    //   borderRadius: '5px',
+    //   color: 'white',
+    //   height: '200px',
+    //   fontSize: '10px',
+    //   overflow: 'auto',
+    //   display: 'none'
+    // });
+
+    // // Handle face switching with validation
+    // faceSelector.addEventListener('change', (event) => {
+    //   const newFace = event.target.value;
+    //   const currentColors = cubeState[currentFace];
+    //   const isComplete = currentColors.every(color => color !== "#555");
+    //   console.log("hello",isComplete)
+
+    //   console.log("hello", isComplete);
+    
+    //   if (!isComplete) {
+    //     alert(`Please fill all cuboids on the "${currentFace}" face before switching.`);
+    //     faceSelector.value = currentFace;
+    //     return;
+    //   }
+    
+    //   // Update currentFace *before* rendering new face
+    //   currentFace = newFace;
+    
+    //   // Render new face colors
+    //   cuboids.forEach((cuboid, i) => {
+    //     cuboid.style.backgroundColor = cubeState[currentFace][i];
+    //   });
+    // });
+
+    // faceSelector.dispatchEvent(new Event('change'));
+
+    // printButton.addEventListener('click', () => {
+    //   output.style.display = "block";
+    //   const allColors = Object.values(cubeState).flat();
+    //   const usedColors = new Set(allColors);
+    //   usedColors.delete("#555"); // exclude unfilled
+
+    //   if (usedColors.size !== 6) {
+    //     output.textContent = `❌ Cube must use exactly 6 colors.\nUsed: ${[...usedColors].join(', ')}`;
+    //     return;
+    //   }
+
+    //   // Count occurrences of each color
+    //   const colorCounts = {};
+    //   for (const color of allColors) {
+    //     if (color === "#555"){ 
+    //       output.textContent = `❌ All the cuboids should be filled with a valid color.\n` + msgs.join('\n');
+    //       return;
+    //     } // skip unfilled
+    //     colorCounts[color] = (colorCounts[color] || 0) + 1;
+    //   }
+
+    //   // Check no color appears more than 9 times
+    //   const overused = Object.entries(colorCounts).filter(([color, count]) => count > 9);
+
+    //   if (overused.length > 0) {
+    //     const msgs = overused.map(([color, count]) => `${color} used ${count} times`);
+    //     output.textContent = `❌ Each color can only appear up to 9 times.\n` + msgs.join('\n');
+    //     return;
+    //   }
+
+    //   output.textContent = `✅ Cube State:\n` + JSON.stringify(cubeState, null, 2);
+    // });
+
+    // return;
+
     this.dom = {
       ui: document.querySelector( '.ui' ),
       game: document.querySelector( '.ui__game' ),
