@@ -52,7 +52,7 @@
 </head>
 <body>
 
-  <div class="ui">
+  <!-- <div class="ui">
 
     <div class="ui__background"></div>
 
@@ -134,33 +134,42 @@
       </button>
     </div>
 
-  </div>
-
-  <!-- <div style="height: 100vh; width: 100vw;display: flex;justify-content: center;align-items: center;flex-direction: column;">
-    <div class="controls">
-      <select id="faceSelector" style="width: 100px;height: 80px;font-size:16px">
-        <option value="front">Front</option>
-        <option value="back">Back</option>
-        <option value="left">Left</option>
-        <option value="right">Right</option>
-        <option value="top">Top</option>
-        <option value="bottom">Bottom</option>
-      </select>
-  
-      <span id="colorButtons"></span>
-      <button id="printButton" style="font-size:16px">Print Cube State</button>
-    </div>
-
-      <div class="cube-face" id="cubeFace" style="display: grid;grid-template-columns: repeat(3, 80px);grid-template-rows: repeat(3, 80px);
-      gap: 5px;
-      width : 280px;
-      height: 280px;
-      padding: 10px;
-      border-radius: 10px;
-      border: 1px solid #222;">
-      </div>
-      <div id="output"></div>
   </div> -->
+
+  <div style="background: #111; color: #fff; font-family: sans-serif; padding: 20px; width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center">
+    <div style="display: flex; justify-content: space-around; max-height: 80px;">
+      <div id="colorButtons" style="margin-bottom: 10px;"></div>
+      <select id="faceSelector" style="width: 100px;height: 80px;font-size:16px">>
+          <option value="F">Front (F)</option>
+          <option value="B">Back (B)</option>
+          <option value="L">Left (L)</option>
+          <option value="R">Right (R)</option>
+          <option value="U">Top (U)</option>
+          <option value="D">Bottom (D)</option>
+        </select>
+        <button id="printButton" style="padding: 5px 10px; margin-bottom: 10px; font-size: 16px;">✅ Print Cube</button>
+        <pre id="output" style="display: none; background: #222; padding: 10px; color: #0f0;"></pre>
+    </div>
+    <div style="display: flex; flex-direction: column; align-items: center; width: 100%;">
+      <div id="surrounding" style="display: grid; grid-template-areas: 
+      '. top .'
+      'left center right'
+      '. bottom .';
+      grid-template-columns: auto auto auto;
+      grid-template-rows: auto auto auto;
+      gap: 5px;
+      margin: 20px 0;
+      justify-content: center;
+      align-items: center;
+    ">
+      <div id="adj-top" style="display: grid; grid-template-columns: repeat(3, 30px); grid-area: top; margin-inline : auto"></div>
+      <div id="adj-left" style="display: grid; grid-template-columns: repeat(3, 30px); grid-area: left;"></div>
+      <div id="face" style="display: grid; grid-template-columns: repeat(3, 50px); gap: 4px; margin: 10px 0; grid-area: center;"></div>
+      <div id="adj-right" style="display: grid; grid-template-columns: repeat(3, 30px); grid-area: right;"></div>
+      <div id="adj-bottom" style="display: grid; grid-template-columns: repeat(3, 30px); grid-area: bottom; margin-inline : auto"></div>
+    </div>
+    </div>
+  </div>
 
   <script src="assets/js/three.js"></script>
   <script src="assets/js/cube.js"></script>
