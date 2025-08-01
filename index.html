@@ -1,19 +1,21 @@
 <!DOCTYPE html>
 <html>
+
 <head>
 
   <meta charset="UTF-8">
   <meta name="author" content="Boris Sehovac">
   <meta name="description" content="See if you can solve this classic puzzle game.">
-  <meta name="viewport" content="width=device-width,height=device-height,user-scalable=no,initial-scale=1.0,maximum-scale=1.0,minimum-scale=1.0">
+  <meta name="viewport"
+    content="width=device-width,height=device-height,user-scalable=no,initial-scale=1.0,maximum-scale=1.0,minimum-scale=1.0">
 
   <title>The Cube - A Rubik's Cube Game</title>
-  <meta property="og:description" content="See if you can solve this classic puzzle game."/>
-  <meta property="og:image" content="assets/icons/meta-image.png"/>
-  <meta property="og:site_name" content="The Cube - A Rubik's Cube Game"/>
-  <meta property="og:title" content="The Cube - A Rubik's Cube Game"/>
-  <meta property="og:type" content="website"/>
-  <meta property="og:url" content="https://bsehovac.github.io"/>
+  <meta property="og:description" content="See if you can solve this classic puzzle game." />
+  <meta property="og:image" content="assets/icons/meta-image.png" />
+  <meta property="og:site_name" content="The Cube - A Rubik's Cube Game" />
+  <meta property="og:title" content="The Cube - A Rubik's Cube Game" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://bsehovac.github.io" />
 
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:creator" content="@BorisSehovac">
@@ -40,7 +42,7 @@
   <script async src="https://www.googletagmanager.com/gtag/js?id=UA-128627708-1"></script>
   <script>
     window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
+    function gtag() { dataLayer.push(arguments); }
     gtag('js', new Date());
     gtag('config', 'UA-128627708-1');
   </script>
@@ -50,9 +52,10 @@
   </script>
 
 </head>
+
 <body>
 
-  <!-- <div class="ui">
+  <div class="ui" id="main-ui" style="display: none;">
 
     <div class="ui__background"></div>
 
@@ -134,23 +137,26 @@
       </button>
     </div>
 
-  </div> -->
+  </div>
 
-  <div style="background: #111; color: #fff; font-family: sans-serif; padding: 20px; width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center">
+  <div id="custom-cube"
+    style="background: #111; color: #fff; font-family: sans-serif; padding: 20px; width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center">
     <div style="display: flex; justify-content: space-around; max-height: 80px;">
       <div id="colorButtons" style="margin-bottom: 10px;"></div>
       <select id="faceSelector" style="width: 100px;height: 80px;font-size:16px">>
-          <option value="F">Front (F)</option>
-          <option value="B">Back (B)</option>
-          <option value="L">Left (L)</option>
-          <option value="R">Right (R)</option>
-          <option value="U">Top (U)</option>
-          <option value="D">Bottom (D)</option>
-        </select>
-        <button id="printButton" style="padding: 5px 10px; margin-bottom: 10px; font-size: 16px;">✅ Print Cube</button>
-        <pre id="output" style="display: none; background: #222; padding: 10px; color: #0f0;"></pre>
+        <option value="F">Front (F)</option>
+        <option value="B">Back (B)</option>
+        <option value="L">Left (L)</option>
+        <option value="R">Right (R)</option>
+        <option value="U">Top (U)</option>
+        <option value="D">Bottom (D)</option>
+      </select>
+      <button id="printButton" style="padding: 5px 10px; margin-bottom: 10px; font-size: 16px;">✅ Print Cube</button>
+      <pre id="output"
+        style="display: none; background: #222; padding: 10px; color: #0f0; height: 200px; width: 200px; font-size: 10px; overflow: auto;"></pre>
     </div>
     <div style="display: flex; flex-direction: column; align-items: center; width: 100%;">
+      <!-- <div class="ui__game" style="width: 100%; max-width: 400px; height: 400px; position: relative; margin-bottom: 20px;"></div> -->
       <div id="surrounding" style="display: grid; grid-template-areas: 
       '. top .'
       'left center right'
@@ -162,12 +168,16 @@
       justify-content: center;
       align-items: center;
     ">
-      <div id="adj-top" style="display: grid; grid-template-columns: repeat(3, 30px); grid-area: top; margin-inline : auto"></div>
-      <div id="adj-left" style="display: grid; grid-template-columns: repeat(3, 30px); grid-area: left;"></div>
-      <div id="face" style="display: grid; grid-template-columns: repeat(3, 50px); gap: 4px; margin: 10px 0; grid-area: center;"></div>
-      <div id="adj-right" style="display: grid; grid-template-columns: repeat(3, 30px); grid-area: right;"></div>
-      <div id="adj-bottom" style="display: grid; grid-template-columns: repeat(3, 30px); grid-area: bottom; margin-inline : auto"></div>
-    </div>
+        <div id="adj-top"
+          style="display: grid; grid-template-columns: repeat(3, 30px); grid-area: top; margin-inline : auto"></div>
+        <div id="adj-left" style="display: grid; grid-template-columns: repeat(3, 30px); grid-area: left;"></div>
+        <div id="face"
+          style="display: grid; grid-template-columns: repeat(3, 50px); gap: 4px; margin: 10px 0; grid-area: center;">
+        </div>
+        <div id="adj-right" style="display: grid; grid-template-columns: repeat(3, 30px); grid-area: right;"></div>
+        <div id="adj-bottom"
+          style="display: grid; grid-template-columns: repeat(3, 30px); grid-area: bottom; margin-inline : auto"></div>
+      </div>
     </div>
   </div>
 
@@ -180,10 +190,14 @@
       UpUp.start({
         'cache-version': window.gameVersion,
         'content-url': 'index.html',
-        'assets': [ 'assets/css/styles.css', 'assets/js/three.js', 'assets/js/cube.js' ]
+        'assets': ['assets/css/styles.css', 'assets/js/three.js', 'assets/js/cube.js']
       });
     }
   </script>
 
 </body>
+
 </html>
+
+<!-- solverString LLLLFLLLLDDDDRDDDDFFFFUFFFFBBBBDBBBBUUUULUUUURRRRBRRRR -->
+<!-- cube.js:8208 solution Dprime Bprime Uprime L Uprime Lprime U F R U Rprime Dprime R2 D Rprime Dprime Lprime D L Dprime F D2 Fprime Dprime F D Fprime Dprime Fprime D F D L Dprime Lprime Bprime Lprime B Fprime Dprime F D Bprime L B R2 D R D Rprime Dprime Rprime Dprime Rprime D Rprime D -->

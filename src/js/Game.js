@@ -11,6 +11,7 @@ import { Storage } from './Storage.js';
 import { Themes } from './Themes.js';
 import { ThemeEditor } from './ThemeEditor.js';
 import { States } from './States.js';
+import solver from 'rubiks-cube-solver';
 // import { Keyboard } from './Keyboard.js';
 
 import { Icons } from './Icons.js';
@@ -39,11 +40,16 @@ const HIDE = false;
 
 const FAST = true;
 const SLOW = false;
+let solutionSteps = '';
 
 class Game {
 
   constructor() {
+    this.setup2DCube();
+    // this.setup3DCube();
+  }
 
+  setup2DCube(){
     const FACE_COLORS = {
       U: "#fff7ff", // white (Top)
       D: "#ffef48", // yellow (Bottom)
@@ -124,6 +130,24 @@ class Game {
       face.appendChild(div);
     }
 
+    const convertStateForSolver = (state) => {
+      const colorToFaceLetter = {};
+      Object.entries(FACE_COLORS).forEach(([face, color]) => {
+        // The solver expects single-letter face names (U, D, L, R, F, B)
+        colorToFaceLetter[color] = face.charAt(0);
+      });
+
+      // The solver expects the faces in FRUDLB order.
+      const faceOrder = ['F', 'R', 'U', 'D', 'L', 'B'];
+
+      const data = faceOrder.map(faceLetter =>
+        state[faceLetter].map(hexColor => colorToFaceLetter[hexColor] || 'X') // 'X' for gray/unassigned
+          .join('')
+      ).join('');
+
+      return data;
+    };
+
     // Face change logic with validation
     faceSelector.addEventListener("change", (event) => {
       const newFace = event.target.value;
@@ -170,6 +194,34 @@ class Game {
       }
 
       output.textContent = `✅ Cube is valid!\n` + JSON.stringify(cubeState, null, 2);
+
+      const solverString = convertStateForSolver(cubeState);
+      console.log("solverString", solverString);
+
+      const solution = solver(solverString);
+      console.log("solution", solution);
+
+      if (solution && typeof solution === 'string') {
+        // The solver returns moves with 'prime' (e.g., "Rprime"),
+        // but the scrambler expects an apostrophe (e.g., "R'").
+        const scramblerFriendlySolution = solution.replace(/prime/g, "'");
+
+        console.log('Solution:', scramblerFriendlySolution);
+        solutionSteps = scramblerFriendlySolution;
+        output.textContent += `\nSolution: ${scramblerFriendlySolution}`;
+        
+        // Use the game's scrambler and controls to animate the solution.
+        // this.scrambler.scramble(scramblerFriendlySolution);
+        // this.controls.scrambleCube();
+        // const customCube = document.querySelector('#custom-cube');
+        // customCube.style.display = 'none'; 
+        // const mainUi = document.querySelector('#main-ui');
+        // mainUi.style.display = 'block';  
+        this.setup3DCube();
+      } else {
+        output.textContent += '\n❌ No solution found.';
+      }
+
     });
 
     // Initialize face with default face data
@@ -225,11 +277,13 @@ class Game {
     createStrip("adj-left");
     createStrip("adj-right");
     updateSurroundingFaces();
+  }
 
-
-
-    return;
-
+  setup3DCube(){
+    const customCube = document.querySelector('#custom-cube');
+    customCube.style.display = 'none'; 
+    const mainUi = document.querySelector('#main-ui');
+    mainUi.style.display = 'block';  
     this.dom = {
       ui: document.querySelector( '.ui' ),
       game: document.querySelector( '.ui__game' ),
@@ -290,12 +344,13 @@ class Game {
       setTimeout( () => this.transition.buttons( BUTTONS.Menu, BUTTONS.None ), 1000 );
 
     }, 500 );
-
   }
 
   initActions() {
 
     let tappedTwice = false;
+    // this.game( SHOW );
+
 
     this.dom.game.addEventListener( 'click', event => {
 
@@ -377,13 +432,27 @@ class Game {
 
   }
 
+  _getScrambleFromSolution(solution) {
+    const moves = solution.split(' ');
+    const reversedAndInvertedMoves = moves.reverse().map(move => {
+      if (move.endsWith("'")) {
+        return move.slice(0, -1);
+      }
+      if (move.endsWith('2')) {
+        return move;
+      }
+      return `${move}'`;
+    });
+    return reversedAndInvertedMoves.join(' ');
+  }
+
   game( show ) {
 
     if ( show ) {
 
       if ( ! this.saved ) {
-
-        this.scrambler.scramble();
+        const scramble = this._getScrambleFromSolution(solutionSteps);
+        this.scrambler.scramble(scramble);
         this.controls.scrambleCube();
         this.newGame = true;
 
