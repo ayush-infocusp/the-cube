@@ -11,7 +11,7 @@ class Storage {
       this.clearGame();
       this.clearPreferences();
       this.migrateScores();
-      localStorage.setItem( 'theCube_version', window.gameVersion );
+      // localStorage.setItem( 'theCube_version', window.gameVersion );
 
     }
 
@@ -25,7 +25,7 @@ class Storage {
   }
 
   loadGame() {
-
+    return;
     try {
 
       const gameInProgress = localStorage.getItem( 'theCube_playing' ) === 'true';
@@ -42,7 +42,7 @@ class Storage {
 
       this.game.timer.deltaTime = gameTime;
 
-      this.game.saved = true;
+      this.game.saved = false;
 
     } catch( e ) {
 

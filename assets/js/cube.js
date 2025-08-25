@@ -1811,33 +1811,32 @@
 		}
 
 		scramble( scramble ) {
-
-			let count = 0;
+			console.log( scramble );
 			this.moves = ( typeof scramble !== 'undefined' ) ? scramble.split( ' ' ) : [];
 
-			if ( this.moves.length < 1 ) {
+			// if ( this.moves.length < 1 ) {
 
-				const scrambleLength = this.scrambleLength[ this.game.cube.size ][ this.dificulty ];
+			// 	const scrambleLength = this.scrambleLength[ this.game.cube.size ][ this.dificulty ];
 
-				const faces = this.game.cube.size < 4 ? 'UDLRFB' : 'UuDdLlRrFfBb';
-				const modifiers = [ "", "'", "2" ];
-				const total = ( typeof scramble === 'undefined' ) ? scrambleLength : scramble;
+			// 	const faces = this.game.cube.size < 4 ? 'UDLRFB' : 'UuDdLlRrFfBb';
+			// 	const modifiers = [ "", "'", "2"];
+			// 	const total = ( typeof scramble === 'undefined' ) ? scrambleLength : scramble;
 
-				while ( count < total ) {
+			// 	while ( count < total ) {
 
-					const move =
-						faces[ Math.floor( Math.random() * faces.length ) ] +
-						modifiers[ Math.floor( Math.random() * 3 ) ];
+			// 		const move =
+			// 			faces[ Math.floor( Math.random() * faces.length ) ] +
+			// 			modifiers[ Math.floor( Math.random() * 3 ) ];
 
-					if ( count > 0 && move.charAt( 0 ) == this.moves[ count - 1 ].charAt( 0 ) ) continue;
-					if ( count > 1 && move.charAt( 0 ) == this.moves[ count - 2 ].charAt( 0 ) ) continue;
+			// 		if ( count > 0 && move.charAt( 0 ) == this.moves[ count - 1 ].charAt( 0 ) ) continue;
+			// 		if ( count > 1 && move.charAt( 0 ) == this.moves[ count - 2 ].charAt( 0 ) ) continue;
 
-					this.moves.push( move );
-					count ++;
+			// 		this.moves.push( move );
+			// 		count ++;
 
-				}
+			// 	}
 
-			}
+			// }
 
 			this.callback = () => {};
 			this.convert();
@@ -3053,7 +3052,7 @@
 	      this.clearGame();
 	      this.clearPreferences();
 	      this.migrateScores();
-	      localStorage.setItem( 'theCube_version', window.gameVersion );
+	      // localStorage.setItem( 'theCube_version', window.gameVersion );
 
 	    }
 
@@ -3067,30 +3066,7 @@
 	  }
 
 	  loadGame() {
-
-	    try {
-
-	      const gameInProgress = localStorage.getItem( 'theCube_playing' ) === 'true';
-
-	      if ( ! gameInProgress ) throw new Error();
-
-	      const gameCubeData = JSON.parse( localStorage.getItem( 'theCube_savedState' ) );
-	      const gameTime = parseInt( localStorage.getItem( 'theCube_time' ) );
-
-	      if ( ! gameCubeData || gameTime === null ) throw new Error();
-	      if ( gameCubeData.size !== this.game.cube.sizeGenerated ) throw new Error();
-
-	      this.game.cube.loadFromData( gameCubeData );
-
-	      this.game.timer.deltaTime = gameTime;
-
-	      this.game.saved = true;
-
-	    } catch( e ) {
-
-	      this.game.saved = false;
-
-	    }
+	    return;
 
 	  }
 
@@ -8177,6 +8153,7 @@
 	    // Print/validate cube state
 	    printButton.addEventListener("click", () => {
 	      output.style.display = "block";
+	      console.log("cubeState", cubeState);
 
 	      const allColors = Object.values(cubeState).flat();
 	      const usedColors = new Set(allColors);
@@ -8205,7 +8182,7 @@
 	      const solverString = convertStateForSolver(cubeState);
 	      console.log("solverString", solverString);
 
-	      const solution = solver(solverString);
+	      const solution = solver(solverString.toLowerCase());
 	      console.log("solution", solution);
 
 	      if (solution && typeof solution === 'string') {
@@ -8459,9 +8436,18 @@
 
 	      if ( ! this.saved ) {
 	        const scramble = this._getScrambleFromSolution(solutionSteps);
+	        // const scramble = "B' D'"
 	        this.scrambler.scramble(scramble);
 	        this.controls.scrambleCube();
 	        this.newGame = true;
+
+	        setTimeout(() => {
+	        // const sol = "D B" 
+	        // solutionSteps
+	        this.scrambler.scramble(solutionSteps);
+	        this.controls.scrambleCube();
+	        this.newGame = true;
+	        }, 15000);
 
 	      }
 

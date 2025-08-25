@@ -170,6 +170,7 @@ class Game {
     // Print/validate cube state
     printButton.addEventListener("click", () => {
       output.style.display = "block";
+      console.log("cubeState", cubeState);
 
       const allColors = Object.values(cubeState).flat();
       const usedColors = new Set(allColors);
@@ -198,7 +199,7 @@ class Game {
       const solverString = convertStateForSolver(cubeState);
       console.log("solverString", solverString);
 
-      const solution = solver(solverString);
+      const solution = solver(solverString.toLowerCase());
       console.log("solution", solution);
 
       if (solution && typeof solution === 'string') {
@@ -452,9 +453,18 @@ class Game {
 
       if ( ! this.saved ) {
         const scramble = this._getScrambleFromSolution(solutionSteps);
+        // const scramble = "B' D'"
         this.scrambler.scramble(scramble);
         this.controls.scrambleCube();
         this.newGame = true;
+
+        setTimeout(() => {
+        // const sol = "D B" 
+        // solutionSteps
+        this.scrambler.scramble(solutionSteps);
+        this.controls.scrambleCube();
+        this.newGame = true;
+        }, 15000);
 
       }
 

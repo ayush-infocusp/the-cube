@@ -20,33 +20,35 @@ class Scrambler {
 	}
 
 	scramble( scramble ) {
+		console.log( scramble );
+		// scramble = "B' D' B' D' B' D B'| B D' B D B D B"
 
 		let count = 0;
 		this.moves = ( typeof scramble !== 'undefined' ) ? scramble.split( ' ' ) : [];
 
-		if ( this.moves.length < 1 ) {
+		// if ( this.moves.length < 1 ) {
 
-			const scrambleLength = this.scrambleLength[ this.game.cube.size ][ this.dificulty ];
+		// 	const scrambleLength = this.scrambleLength[ this.game.cube.size ][ this.dificulty ];
 
-			const faces = this.game.cube.size < 4 ? 'UDLRFB' : 'UuDdLlRrFfBb';
-			const modifiers = [ "", "'", "2" ];
-			const total = ( typeof scramble === 'undefined' ) ? scrambleLength : scramble;
+		// 	const faces = this.game.cube.size < 4 ? 'UDLRFB' : 'UuDdLlRrFfBb';
+		// 	const modifiers = [ "", "'", "2"];
+		// 	const total = ( typeof scramble === 'undefined' ) ? scrambleLength : scramble;
 
-			while ( count < total ) {
+		// 	while ( count < total ) {
 
-				const move =
-					faces[ Math.floor( Math.random() * faces.length ) ] +
-					modifiers[ Math.floor( Math.random() * 3 ) ];
+		// 		const move =
+		// 			faces[ Math.floor( Math.random() * faces.length ) ] +
+		// 			modifiers[ Math.floor( Math.random() * 3 ) ];
 
-				if ( count > 0 && move.charAt( 0 ) == this.moves[ count - 1 ].charAt( 0 ) ) continue;
-				if ( count > 1 && move.charAt( 0 ) == this.moves[ count - 2 ].charAt( 0 ) ) continue;
+		// 		if ( count > 0 && move.charAt( 0 ) == this.moves[ count - 1 ].charAt( 0 ) ) continue;
+		// 		if ( count > 1 && move.charAt( 0 ) == this.moves[ count - 2 ].charAt( 0 ) ) continue;
 
-				this.moves.push( move );
-				count ++;
+		// 		this.moves.push( move );
+		// 		count ++;
 
-			}
+		// 	}
 
-		}
+		// }
 
 		this.callback = () => {};
 		this.convert();
