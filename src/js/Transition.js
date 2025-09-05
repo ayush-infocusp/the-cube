@@ -409,21 +409,21 @@ class Transition {
 
   timer( show ) {
 
-    this.activeTransitions++;
+    // this.activeTransitions++;
 
-    const timer = this.game.dom.texts.timer;
+    // const timer = this.game.dom.texts.button;
 
-    timer.style.opacity = 0;
-    this.game.timer.convert();
-    this.game.timer.setText();
+    // timer.style.opacity = 0;
+    // this.game.timer.convert();
+    // this.game.timer.setText();
 
-    this.splitLetters( timer );
-    const letters = timer.querySelectorAll( 'i' );
-    this.flipLetters( 'timer', letters, show );
+    // this.splitLetters( timer );
+    // const letters = timer.querySelectorAll( 'i' );
+    // this.flipLetters( 'timer', letters, show );
 
-    timer.style.opacity = 1;
+    // timer.style.opacity = 1;
 
-    setTimeout( () => this.activeTransitions--, this.durations.timer );
+    // setTimeout( () => this.activeTransitions--, this.durations.timer );np
 
   }
 

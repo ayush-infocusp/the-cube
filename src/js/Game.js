@@ -41,6 +41,9 @@ const HIDE = false;
 const FAST = true;
 const SLOW = false;
 let solutionSteps = '';
+let scramble = [];
+let presentIndex = 0;
+let solutionStepsArray = [];
 
 class Game {
 
@@ -61,14 +64,82 @@ class Game {
 
     let selectedColor = null;
     let currentFace = "F";
+    // const cubeState = {
+    //   U: Array(9).fill("#555"),
+    //   D: Array(9).fill("#555"),
+    //   F: Array(9).fill("#555"),
+    //   B: Array(9).fill("#555"),
+    //   L: Array(9).fill("#555"),
+    //   R: Array(9).fill("#555"),
+    // };
     const cubeState = {
-      U: Array(9).fill("#555"),
-      D: Array(9).fill("#555"),
-      F: Array(9).fill("#555"),
-      B: Array(9).fill("#555"),
-      L: Array(9).fill("#555"),
-      R: Array(9).fill("#555"),
-    };
+    U: [
+        "#41aac8",
+        "#41aac8",
+        "#41aac8",
+        "#41aac8",
+        "#fff7ff",
+        "#41aac8",
+        "#41aac8",
+        "#41aac8",
+        "#41aac8"
+    ],
+    D: [
+        "#82ca38",
+        "#82ca38",
+        "#82ca38",
+        "#82ca38",
+        "#ffef48",
+        "#82ca38",
+        "#82ca38",
+        "#82ca38",
+        "#82ca38"
+    ],
+    F: [
+        "#fff7ff",
+        "#fff7ff",
+        "#fff7ff",
+        "#fff7ff",
+        "#ef3923",
+        "#fff7ff",
+        "#fff7ff",
+        "#fff7ff",
+        "#fff7ff"
+    ],
+    B: [
+        "#ffef48",
+        "#ffef48",
+        "#ffef48",
+        "#ffef48",
+        "#ff8c0a",
+        "#ffef48",
+        "#ffef48",
+        "#ffef48",
+        "#ffef48"
+    ],
+    L: [
+        "#ff8c0a",
+        "#ff8c0a",
+        "#ff8c0a",
+        "#ff8c0a",
+        "#82ca38",
+        "#ff8c0a",
+        "#ff8c0a",
+        "#ff8c0a",
+        "#ff8c0a"
+    ],
+    R: [
+        "#ef3923",
+        "#ef3923",
+        "#ef3923",
+        "#ef3923",
+        "#41aac8",
+        "#ef3923",
+        "#ef3923",
+        "#ef3923",
+        "#ef3923"
+    ]
+  }
 
     const adjacentFaces = {
       F: { top: "U", bottom: "D", left: "L", right: "R" },
@@ -295,7 +366,7 @@ class Game {
       texts: {
         title: document.querySelector( '.text--title' ),
         note: document.querySelector( '.text--note' ),
-        timer: document.querySelector( '.text--timer' ),
+        button: document.querySelector( '.text--timer' ),
         complete: document.querySelector( '.text--complete' ),
         best: document.querySelector( '.text--best-time' ),
         theme: document.querySelector( '.text--theme' ),
@@ -306,6 +377,8 @@ class Game {
         stats: document.querySelector( '.btn--stats' ),
         reset: document.querySelector( '.btn--reset' ),
         theme: document.querySelector( '.btn--theme' ),
+        next: document.querySelector( '.btn--next' ),
+        prev: document.querySelector( '.btn--prev' ),
       },
     };
 
@@ -314,7 +387,7 @@ class Game {
     this.controls = new Controls( this );
     this.scrambler = new Scrambler( this );
     this.transition = new Transition( this );
-    this.timer = new Timer( this );
+    // this.timer = new Timer( this );
     this.preferences = new Preferences( this );
     this.scores = new Scores( this );
     this.storage = new Storage( this );
@@ -386,7 +459,7 @@ class Game {
 
       if ( this.newGame ) {
         
-        this.timer.start( true );
+        // this.timer.start( true );
         this.newGame = false;
 
       }
@@ -446,26 +519,60 @@ class Game {
     });
     return reversedAndInvertedMoves.join(' ');
   }
+  getNewOutput(sol){
+    let newData = [];
+    [...sol].map((data,index)=>{
+      let st = '';
+      if(data == 'R'|| data == 'U'|| data == 'F'|| data == 'L'|| data == 'D'|| data == 'B'){
+        st = st+data;
+        if(sol[index+1] == `'` || sol[index+1]=='2')
+          st= st+sol[index+1]
+        console.log('data',st,data);
+        newData.push(st);
+      }
+    })
+    return newData;
+  }
+  
+  nextButtonEvent() {
+    const solutionStepsArray = this.getNewOutput(solutionSteps);
+    this.solutionStepsArray = solutionStepsArray;
+            console.log("nextButtonEvent", this.dom.buttons.next);
+        this.dom.buttons.next.addEventListener( 'click', event => {
+// this.dom.buttons.next.onclick = 
+        console.log("nextButtonEvent", this.dom.buttons.next);
+        const presentStep = solutionStepsArray[presentIndex++];
+        this.scrambler.scramble(presentStep);
+        this.controls.scrambleCube();
+
+    });
+  }
+
 
   game( show ) {
 
     if ( show ) {
 
       if ( ! this.saved ) {
-        const scramble = this._getScrambleFromSolution(solutionSteps);
+        scramble = this._getScrambleFromSolution(solutionSteps)
+        // .split(' ');
         // const scramble = "B' D'"
+        this.scramble=scramble;
+        // const presentStep = scramble[presentIndex];
         this.scrambler.scramble(scramble);
         this.controls.scrambleCube();
-        this.newGame = true;
+        console.log("steps",scramble)
+        // this.newGame = true;
 
-        setTimeout(() => {
-        // const sol = "D B" 
-        // solutionSteps
-        this.scrambler.scramble(solutionSteps);
-        this.controls.scrambleCube();
-        this.newGame = true;
-        }, 15000);
-
+        // setTimeout(() => {
+        // // const sol = "D B" 
+        // // solutionSteps
+        // this.scrambler.scramble(solutionSteps);
+        // this.controls.scrambleCube();
+        // this.newGame = true;
+        // }, 15000);
+        this.nextButtonEvent();
+        // D L2 F L D L D' L' F' L D2 L' D2 L2 D L' D L D' L' D L D2 L' F D F' D' R' D' R D F' D F D' F' D F D' R D R' F' D F D2 B D' B' R D' R' D' U L F U' L2 D' U' L' U B D'
       }
 
       const duration = this.saved ? 0 :
@@ -478,18 +585,20 @@ class Game {
 
       this.transition.zoom( STATE.Playing, duration );
       this.transition.title( HIDE );
+      // this.nextButtonEvent();
 
       setTimeout( () => {
 
-        this.transition.timer( SHOW );
-        this.transition.buttons( BUTTONS.Playing, BUTTONS.None );
+        this.transition.timer( SHOW );        
+        // this.nextButtonEvent();
+
 
       }, this.transition.durations.zoom - 1000 );
 
       setTimeout( () => {
 
         this.controls.enable();
-        if ( ! this.newGame ) this.timer.start( true )
+        // if ( ! this.newGame ) this.timer.start( true )
 
       }, this.transition.durations.zoom );
 
@@ -636,10 +745,10 @@ class Game {
       this.saved = false;
 
       this.controls.disable();
-      this.timer.stop();
+      // this.timer.stop();
       this.storage.clearGame();
 
-      this.bestTime = this.scores.addScore( this.timer.deltaTime );
+      // this.bestTime = this.scores.addScore( this.timer.deltaTime );
 
       this.transition.zoom( STATE.Menu, 0 );
       this.transition.elevate( SHOW );
@@ -656,10 +765,10 @@ class Game {
       this.state = STATE.Stats;
       this.saved = false;
 
-      this.transition.timer( HIDE );
+      // this.transition.timer( HIDE );
       this.transition.complete( HIDE, this.bestTime );
       this.transition.cube( HIDE );
-      this.timer.reset();
+      // this.timer.reset();
 
       setTimeout( () => {
 

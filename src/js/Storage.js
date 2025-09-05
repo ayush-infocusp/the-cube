@@ -54,6 +54,7 @@ class Storage {
 
   saveGame() {
 
+    return;
     const gameInProgress = true;
     const gameCubeData = { names: [], positions: [], rotations: [] };
     const gameTime = this.game.timer.deltaTime;
@@ -83,6 +84,7 @@ class Storage {
   }
 
   loadScores() {
+    return;
 
     try {
 
@@ -98,6 +100,7 @@ class Storage {
 
   saveScores() {
 
+    return;
     const scoresData = this.game.scores.data;
 
     localStorage.setItem( 'theCube_scores', JSON.stringify( scoresData ) );
@@ -106,11 +109,13 @@ class Storage {
 
   clearScores() {
 
+    return;
     localStorage.removeItem( 'theCube_scores' );
 
   }
 
   migrateScores() {
+    return;
 
     try {
 

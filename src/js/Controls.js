@@ -452,7 +452,7 @@ class Controls {
       } else {
 
         this.scramble = null;
-        this.game.storage.saveGame();
+        // this.game.storage.saveGame();
 
       }
 
