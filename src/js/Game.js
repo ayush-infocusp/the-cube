@@ -537,15 +537,16 @@ class Game {
   nextButtonEvent() {
     const solutionStepsArray = this.getNewOutput(solutionSteps);
     this.solutionStepsArray = solutionStepsArray;
-            console.log("nextButtonEvent", this.dom.buttons.next);
-        this.dom.buttons.next.addEventListener( 'click', event => {
-// this.dom.buttons.next.onclick = 
+    console.log("nextButtonEvent", this.dom.buttons.next);
+    // this.dom.buttons.next.addEventListener( 'click', event => {
+
+    this.dom.buttons.next.onclick = event => {
         console.log("nextButtonEvent", this.dom.buttons.next);
         const presentStep = solutionStepsArray[presentIndex++];
         this.scrambler.scramble(presentStep);
         this.controls.scrambleCube();
 
-    });
+    }
   }
 
 
