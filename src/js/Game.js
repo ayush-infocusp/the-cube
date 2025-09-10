@@ -520,7 +520,9 @@ class Game {
     return reversedAndInvertedMoves.join(' ');
   }
   getNewOutput(sol){
-    let newData = [];
+    // The solution string is space-separated, so we can just split it.
+    // return sol.split(' ').filter(move => move !== '');
+        let newData = [];
     [...sol].map((data,index)=>{
       let st = '';
       if(data == 'R'|| data == 'U'|| data == 'F'|| data == 'L'|| data == 'D'|| data == 'B'){
@@ -538,10 +540,16 @@ class Game {
     const solutionStepsArray = this.getNewOutput(solutionSteps);
     this.solutionStepsArray = solutionStepsArray;
     console.log("nextButtonEvent", this.dom.buttons.next);
-    // this.dom.buttons.next.addEventListener( 'click', event => {
 
     this.dom.buttons.next.onclick = event => {
         console.log("nextButtonEvent", this.dom.buttons.next);
+        if (presentIndex >= solutionStepsArray.length) {
+          console.log('End of solution.');
+          // Optionally disable the button
+          this.dom.buttons.next.style.pointerEvents = 'none';
+          this.dom.buttons.next.style.opacity = '0.5';
+          return;
+        }
         const presentStep = solutionStepsArray[presentIndex++];
         this.scrambler.scramble(presentStep);
         this.controls.scrambleCube();
@@ -555,6 +563,9 @@ class Game {
     if ( show ) {
 
       if ( ! this.saved ) {
+        presentIndex = 0; // Reset for new solution
+        this.dom.buttons.next.style.pointerEvents = 'all';
+        this.dom.buttons.next.style.opacity = '1';
         scramble = this._getScrambleFromSolution(solutionSteps)
         // .split(' ');
         // const scramble = "B' D'"
