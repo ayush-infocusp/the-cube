@@ -8229,6 +8229,7 @@
 	        complete: document.querySelector( '.text--complete' ),
 	        best: document.querySelector( '.text--best-time' ),
 	        theme: document.querySelector( '.text--theme' ),
+	        step: document.querySelector( '.text--step' ),
 	      },
 	      buttons: {
 	        prefs: document.querySelector( '.btn--prefs' ),
@@ -8409,10 +8410,38 @@
 	          this.dom.buttons.next.style.opacity = '0.5';
 	          return;
 	        }
+	        this.dom.buttons.prev.style.pointerEvents = 'all';
+	        this.dom.buttons.prev.style.opacity = '1';
 	        const presentStep = solutionStepsArray[presentIndex++];
+	        this.dom.texts.step.querySelector('span').textContent = `Step: ${presentStep}`;
 	        this.scrambler.scramble(presentStep);
 	        this.controls.scrambleCube();
 
+	    };
+	  }
+
+	  prevButtonEvent() {
+	    const solutionStepsArray = this.solutionStepsArray;
+
+	    this.dom.buttons.prev.onclick = event => {
+	      console.log("prevButtonEvent", this.dom.buttons.prev);
+	      if (presentIndex <= 0) {
+	        console.log('Start of solution.');
+	        // Optionally disable the button
+	        this.dom.buttons.prev.style.pointerEvents = 'none';
+	        this.dom.buttons.prev.style.opacity = '0.5';
+	        return;
+	      }
+	      this.dom.buttons.next.style.pointerEvents = 'all';
+	      this.dom.buttons.next.style.opacity = '1';
+
+	      presentIndex--;
+	      const presentStep = solutionStepsArray[presentIndex];
+	      const invertedStep = this._getScrambleFromSolution(presentStep);
+
+	      this.dom.texts.step.querySelector('span').textContent = `Step: ${presentStep}`;
+	      this.scrambler.scramble(invertedStep);
+	      this.controls.scrambleCube();
 	    };
 	  }
 
@@ -8425,6 +8454,9 @@
 	        presentIndex = 0; // Reset for new solution
 	        this.dom.buttons.next.style.pointerEvents = 'all';
 	        this.dom.buttons.next.style.opacity = '1';
+	        this.dom.buttons.prev.style.pointerEvents = 'none';
+	        this.dom.buttons.prev.style.opacity = '0.5';
+	        this.dom.texts.step.querySelector('span').textContent = '';
 	        scramble = this._getScrambleFromSolution(solutionSteps);
 	        // .split(' ');
 	        // const scramble = "B' D'"
@@ -8443,6 +8475,7 @@
 	        // this.newGame = true;
 	        // }, 15000);
 	        this.nextButtonEvent();
+	        this.prevButtonEvent();
 	        // D L2 F L D L D' L' F' L D2 L' D2 L2 D L' D L D' L' D L D2 L' F D F' D' R' D' R D F' D F D' F' D F D' R D R' F' D F D2 B D' B' R D' R' D' U L F U' L2 D' U' L' U B D'
 	      }
 
@@ -8456,6 +8489,7 @@
 
 	      this.transition.zoom( STATE.Playing, duration );
 	      this.transition.title( HIDE );
+	      this.dom.texts.step.style.opacity = 1;
 	      // this.nextButtonEvent();
 
 	      setTimeout( () => {
@@ -8484,6 +8518,8 @@
 	      this.controls.disable();
 	      if ( ! this.newGame ) this.timer.stop();
 	      this.transition.timer( HIDE );
+	      this.dom.texts.step.style.opacity = 0;
+	      this.dom.texts.step.querySelector('span').textContent = '';
 
 	      setTimeout( () => this.transition.title( SHOW ), this.transition.durations.zoom - 1000 );
 
