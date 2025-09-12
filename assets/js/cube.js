@@ -8397,23 +8397,36 @@
 	  }
 	  
 	  nextButtonEvent() {
-	    const solutionStepsArray = this.getNewOutput(solutionSteps);
-	    this.solutionStepsArray = solutionStepsArray;
+	    const solutionStepsArray = this.solutionStepsArray;
 	    console.log("nextButtonEvent", this.dom.buttons.next);
 
 	    this.dom.buttons.next.onclick = event => {
 	        console.log("nextButtonEvent", this.dom.buttons.next);
 	        if (presentIndex >= solutionStepsArray.length) {
-	          console.log('End of solution.');
-	          // Optionally disable the button
-	          this.dom.buttons.next.style.pointerEvents = 'none';
-	          this.dom.buttons.next.style.opacity = '0.5';
-	          return;
+	            console.log('End of solution.');
+	            
+	            this.dom.buttons.next.style.pointerEvents = 'none';
+	            this.dom.buttons.next.style.opacity = '0.5';
+	            this.dom.buttons.prev.style.pointerEvents = 'none';
+	            this.dom.buttons.prev.style.opacity = '0.5';
+	            
+	            this.dom.texts.step.style.opacity = 0;
+
+	            setTimeout(() => {
+	                this.complete(SHOW);
+	            }, 500);
+	            return;
 	        }
 	        this.dom.buttons.prev.style.pointerEvents = 'all';
 	        this.dom.buttons.prev.style.opacity = '1';
 	        const presentStep = solutionStepsArray[presentIndex++];
-	        this.dom.texts.step.querySelector('span').textContent = `Step: ${presentStep}`;
+	        const totalSteps = solutionStepsArray.length;
+
+	        const prevStep = solutionStepsArray[presentIndex - 2] || '-';
+	        const currStep = solutionStepsArray[presentIndex - 1] || 'Start';
+	        const nextStep = solutionStepsArray[presentIndex] || '-';
+	        this.dom.texts.step.querySelector('span').textContent = `(${presentIndex}/${totalSteps}) Prev: ${prevStep} | Current: ${currStep} | Next: ${nextStep}`;
+
 	        this.scrambler.scramble(presentStep);
 	        this.controls.scrambleCube();
 
@@ -8436,10 +8449,15 @@
 	      this.dom.buttons.next.style.opacity = '1';
 
 	      presentIndex--;
+	      const totalSteps = solutionStepsArray.length;
 	      const presentStep = solutionStepsArray[presentIndex];
 	      const invertedStep = this._getScrambleFromSolution(presentStep);
 
-	      this.dom.texts.step.querySelector('span').textContent = `Step: ${presentStep}`;
+	      const prevStep = solutionStepsArray[presentIndex - 2] || '-';
+	      const currStep = solutionStepsArray[presentIndex - 1] || 'Start';
+	      const nextStep = solutionStepsArray[presentIndex] || '-';
+	      this.dom.texts.step.querySelector('span').textContent = `(${presentIndex}/${totalSteps}) Prev: ${prevStep} | Current: ${currStep} | Next: ${nextStep}`;
+
 	      this.scrambler.scramble(invertedStep);
 	      this.controls.scrambleCube();
 	    };
@@ -8452,11 +8470,14 @@
 
 	      if ( ! this.saved ) {
 	        presentIndex = 0; // Reset for new solution
+	        const solutionStepsArray = this.getNewOutput(solutionSteps);
+	        this.solutionStepsArray = solutionStepsArray;
 	        this.dom.buttons.next.style.pointerEvents = 'all';
 	        this.dom.buttons.next.style.opacity = '1';
 	        this.dom.buttons.prev.style.pointerEvents = 'none';
 	        this.dom.buttons.prev.style.opacity = '0.5';
-	        this.dom.texts.step.querySelector('span').textContent = '';
+	        const totalSteps = this.solutionStepsArray.length;
+	        this.dom.texts.step.querySelector('span').textContent = `(0/${totalSteps}) Prev: - | Current: Start | Next: ${this.solutionStepsArray[0] || '-'}`;
 	        scramble = this._getScrambleFromSolution(solutionSteps);
 	        // .split(' ');
 	        // const scramble = "B' D'"
@@ -8644,6 +8665,11 @@
 
 	  complete( show ) {
 
+	    if (this.completeTimeout) {
+	      clearTimeout(this.completeTimeout);
+	      this.completeTimeout = null;
+	    }
+
 	    if ( show ) {
 
 	      this.transition.buttons( BUTTONS.Complete, BUTTONS.Playing );
@@ -8665,11 +8691,15 @@
 	        this.transition.complete( SHOW, this.bestTime );
 	        this.confetti.start();
 
+	        this.completeTimeout = setTimeout(() => {
+	          this.complete( HIDE );
+	        }, 4000);
+
 	      }, 1000 );
 
 	    } else {
 
-	      this.state = STATE.Stats;
+	      this.state = STATE.Menu;
 	      this.saved = false;
 
 	      // this.transition.timer( HIDE );
@@ -8678,13 +8708,12 @@
 	      // this.timer.reset();
 
 	      setTimeout( () => {
-
 	        this.cube.reset();
 	        this.confetti.stop();
-
-	        this.transition.stats( SHOW );
-	        this.transition.elevate( 0 );
-
+	        this.transition.elevate( HIDE );
+	        this.transition.buttons( BUTTONS.Menu, BUTTONS.Complete );
+	        this.transition.cube( SHOW );
+	        this.transition.title( SHOW );
 	      }, 1000 );
 
 	      return false;
