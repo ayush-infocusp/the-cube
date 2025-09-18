@@ -743,7 +743,6 @@
 				this.init();
 
 				this.game.saved = false;
-				this.game.timer.reset();
 				this.game.storage.clearGame();
 
 			}
@@ -1221,38 +1220,45 @@
 	const ANIMATING = 3;
 
 	class Controls {
-
-	  constructor( game ) {
-
+	  constructor(game) {
 	    this.game = game;
 
 	    this.flipConfig = 0;
 
-	    this.flipEasings = [ Easing.Power.Out( 3 ), Easing.Sine.Out(), Easing.Back.Out( 1.5 ) ];
-	    this.flipSpeeds = [ 125, 200, 300 ];
+	    this.flipEasings = [
+	      Easing.Power.Out(3),
+	      Easing.Sine.Out(),
+	      Easing.Back.Out(1.5),
+	    ];
+	    this.flipSpeeds = [125, 200, 300];
 
 	    this.raycaster = new THREE.Raycaster();
 
-	    const helperMaterial = new THREE.MeshBasicMaterial( { depthWrite: false, transparent: true, opacity: 0, color: 0x0033ff } );
+	    const helperMaterial = new THREE.MeshBasicMaterial({
+	      depthWrite: false,
+	      transparent: true,
+	      opacity: 0,
+	      color: 0x0033ff,
+	    });
 
 	    this.group = new THREE.Object3D();
-	    this.group.name = 'controls';
-	    this.game.cube.object.add( this.group );
+	    this.group.name = "controls";
+	    this.game.cube.object.add(this.group);
 
 	    this.helper = new THREE.Mesh(
-	      new THREE.PlaneBufferGeometry( 200, 200 ),
+	      new THREE.PlaneBufferGeometry(200, 200),
 	      helperMaterial.clone()
 	    );
 
-	    this.helper.rotation.set( 0, Math.PI / 4, 0 );
-	    this.game.world.scene.add( this.helper );
+	    this.helper.rotation.set(0, Math.PI / 4, 0);
+	    this.game.world.scene.add(this.helper);
 
 	    this.edges = new THREE.Mesh(
-	      new THREE.BoxBufferGeometry( 1, 1, 1 ),
-	      helperMaterial.clone(),
+	      new THREE.BoxBufferGeometry(1, 1, 1),
+	      helperMaterial.clone()
 	    );
 
-	    this.game.world.scene.add( this.edges );
+	    this.game.world.scene.add(this.edges);
 
 	    this.onSolved = () => {};
 	    this.onMove = () => {};
@@ -1264,529 +1270,458 @@
 	    this.enabled = false;
 
 	    this.initDraggable();
-
 	  }
 
 	  enable() {
-
 	    this.draggable.enable();
 	    this.enabled = true;
-
 	  }
 
 	  disable() {
-
 	    this.draggable.disable();
 	    this.enabled = false;
-
 	  }
 
 	  initDraggable() {
+	    this.draggable = new Draggable(this.game.dom.game);
 
-	    this.draggable = new Draggable( this.game.dom.game );
-
-	    this.draggable.onDragStart = position => {
-
-	      if ( this.scramble !== null ) return;
-	      if ( this.state === PREPARING || this.state === ROTATING ) return;
+	    this.draggable.onDragStart = (position) => {
+	      if (this.scramble !== null) return;
+	      if (this.state === PREPARING || this.state === ROTATING) return;
 
 	      this.gettingDrag = this.state === ANIMATING;
 
-	      const edgeIntersect = this.getIntersect( position.current, this.edges, false );
+	      const edgeIntersect = this.getIntersect(
+	        position.current,
+	        this.edges,
+	        false
+	      );
 
-	      if ( edgeIntersect !== false ) {
-
-	        this.dragIntersect = this.getIntersect( position.current, this.game.cube.cubes, true );
-
+	      if (edgeIntersect !== false) {
+	        this.dragIntersect = this.getIntersect(
+	          position.current,
+	          this.game.cube.cubes,
+	          true
+	        );
 	      }
 
-	      if ( edgeIntersect !== false && this.dragIntersect !== false ) {
-
+	      if (edgeIntersect !== false && this.dragIntersect !== false) {
 	        this.dragNormal = edgeIntersect.face.normal.round();
-	        this.flipType = 'layer';
+	        this.flipType = "layer";
 
-	        this.attach( this.helper, this.edges );
+	        this.attach(this.helper, this.edges);
 
-	        this.helper.rotation.set( 0, 0, 0 );
-	        this.helper.position.set( 0, 0, 0 );
-	        this.helper.lookAt( this.dragNormal );
-	        this.helper.translateZ( 0.5 );
+	        this.helper.rotation.set(0, 0, 0);
+	        this.helper.position.set(0, 0, 0);
+	        this.helper.lookAt(this.dragNormal);
+	        this.helper.translateZ(0.5);
 	        this.helper.updateMatrixWorld();
 
-	        this.detach( this.helper, this.edges );
-
+	        this.detach(this.helper, this.edges);
 	      } else {
+	        this.dragNormal = new THREE.Vector3(0, 0, 1);
+	        this.flipType = "cube";
 
-	        this.dragNormal = new THREE.Vector3( 0, 0, 1 );
-	        this.flipType = 'cube';
-
-	        this.helper.position.set( 0, 0, 0 );
-	        this.helper.rotation.set( 0, Math.PI / 4, 0 );
+	        this.helper.position.set(0, 0, 0);
+	        this.helper.rotation.set(0, Math.PI / 4, 0);
 	        this.helper.updateMatrixWorld();
-
 	      }
 
-	      let planeIntersect = this.getIntersect( position.current, this.helper, false );
-	      if ( planeIntersect === false ) return;
+	      let planeIntersect = this.getIntersect(
+	        position.current,
+	        this.helper,
+	        false
+	      );
+	      if (planeIntersect === false) return;
 
-	      this.dragCurrent = this.helper.worldToLocal( planeIntersect.point );
+	      this.dragCurrent = this.helper.worldToLocal(planeIntersect.point);
 	      this.dragTotal = new THREE.Vector3();
-	      this.state = ( this.state === STILL ) ? PREPARING : this.state;
-
+	      this.state = this.state === STILL ? PREPARING : this.state;
 	    };
 
-	    this.draggable.onDragMove = position => {
+	    this.draggable.onDragMove = (position) => {
+	      if (this.scramble !== null) return;
+	      if (
+	        this.state === STILL ||
+	        (this.state === ANIMATING && this.gettingDrag === false)
+	      )
+	        return;
 
-	      if ( this.scramble !== null ) return;
-	      if ( this.state === STILL || ( this.state === ANIMATING && this.gettingDrag === false ) ) return;
+	      const planeIntersect = this.getIntersect(
+	        position.current,
+	        this.helper,
+	        false
+	      );
+	      if (planeIntersect === false) return;
 
-	      const planeIntersect = this.getIntersect( position.current, this.helper, false );
-	      if ( planeIntersect === false ) return;
+	      const point = this.helper.worldToLocal(planeIntersect.point.clone());
 
-	      const point = this.helper.worldToLocal( planeIntersect.point.clone() );
-
-	      this.dragDelta = point.clone().sub( this.dragCurrent ).setZ( 0 );
-	      this.dragTotal.add( this.dragDelta );
+	      this.dragDelta = point.clone().sub(this.dragCurrent).setZ(0);
+	      this.dragTotal.add(this.dragDelta);
 	      this.dragCurrent = point;
-	      this.addMomentumPoint( this.dragDelta );
+	      this.addMomentumPoint(this.dragDelta);
 
-	      if ( this.state === PREPARING && this.dragTotal.length() > 0.05 ) {
+	      if (this.state === PREPARING && this.dragTotal.length() > 0.05) {
+	        this.dragDirection = this.getMainAxis(this.dragTotal);
 
-	        this.dragDirection = this.getMainAxis( this.dragTotal );
-
-	        if ( this.flipType === 'layer' ) {
-
+	        if (this.flipType === "layer") {
 	          const direction = new THREE.Vector3();
-	          direction[ this.dragDirection ] = 1;
+	          direction[this.dragDirection] = 1;
 
-	          const worldDirection = this.helper.localToWorld( direction ).sub( this.helper.position );
-	          const objectDirection = this.edges.worldToLocal( worldDirection ).round();
+	          const worldDirection = this.helper
+	            .localToWorld(direction)
+	            .sub(this.helper.position);
+	          const objectDirection = this.edges
+	            .worldToLocal(worldDirection)
+	            .round();
 
-	          this.flipAxis = objectDirection.cross( this.dragNormal ).negate();
+	          this.flipAxis = objectDirection.cross(this.dragNormal).negate();
 
-	          this.selectLayer( this.getLayer( false ) );
-
+	          this.selectLayer(this.getLayer(false));
 	        } else {
-
-	          const axis = ( this.dragDirection != 'x' )
-	            ? ( ( this.dragDirection == 'y' && position.current.x > this.game.world.width / 2 ) ? 'z' : 'x' )
-	            : 'y';
+	          const axis =
+	            this.dragDirection != "x"
+	              ? this.dragDirection == "y" &&
+	                position.current.x > this.game.world.width / 2
+	                ? "z"
+	                : "x"
+	              : "y";
 
 	          this.flipAxis = new THREE.Vector3();
-	          this.flipAxis[ axis ] = 1 * ( ( axis == 'x' ) ? -1 : 1 );
-
+	          this.flipAxis[axis] = 1 * (axis == "x" ? -1 : 1);
 	        }
 
 	        this.flipAngle = 0;
 	        this.state = ROTATING;
+	      } else if (this.state === ROTATING) {
+	        const rotation = this.dragDelta[this.dragDirection];
 
-	      } else if ( this.state === ROTATING ) {
-
-	        const rotation = this.dragDelta[ this.dragDirection ];
-
-	        if ( this.flipType === 'layer' ) { 
-
-	          this.group.rotateOnAxis( this.flipAxis, rotation );
+	        if (this.flipType === "layer") {
+	          this.group.rotateOnAxis(this.flipAxis, rotation);
 	          this.flipAngle += rotation;
-
 	        } else {
-
-	          this.edges.rotateOnWorldAxis( this.flipAxis, rotation );
-	          this.game.cube.object.rotation.copy( this.edges.rotation );
+	          this.edges.rotateOnWorldAxis(this.flipAxis, rotation);
+	          this.game.cube.object.rotation.copy(this.edges.rotation);
 	          this.flipAngle += rotation;
-
 	        }
-
 	      }
-
 	    };
 
-	    this.draggable.onDragEnd = position => {
-
-	      if ( this.scramble !== null ) return;
-	      if ( this.state !== ROTATING ) {
-
+	    this.draggable.onDragEnd = (position) => {
+	      if (this.scramble !== null) return;
+	      if (this.state !== ROTATING) {
 	        this.gettingDrag = false;
 	        this.state = STILL;
 	        return;
-
 	      }
 
 	      this.state = ANIMATING;
 
-	      const momentum = this.getMomentum()[ this.dragDirection ];
-	      const flip = ( Math.abs( momentum ) > 0.05 && Math.abs( this.flipAngle ) < Math.PI / 2 );
+	      const momentum = this.getMomentum()[this.dragDirection];
+	      const flip =
+	        Math.abs(momentum) > 0.05 && Math.abs(this.flipAngle) < Math.PI / 2;
 
 	      const angle = flip
-	        ? this.roundAngle( this.flipAngle + Math.sign( this.flipAngle ) * ( Math.PI / 4 ) )
-	        : this.roundAngle( this.flipAngle );
+	        ? this.roundAngle(
+	            this.flipAngle + Math.sign(this.flipAngle) * (Math.PI / 4)
+	          )
+	        : this.roundAngle(this.flipAngle);
 
 	      const delta = angle - this.flipAngle;
 
-	      if ( this.flipType === 'layer' ) {
-
-	        this.rotateLayer( delta, false, layer => {
-
+	      if (this.flipType === "layer") {
+	        this.rotateLayer(delta, false, (layer) => {
 	          this.game.storage.saveGame();
-	          
+
 	          this.state = this.gettingDrag ? PREPARING : STILL;
 	          this.gettingDrag = false;
 
 	          this.checkIsSolved();
-
-	        } );
-
+	        });
 	      } else {
-
-	        this.rotateCube( delta, () => {
-
+	        this.rotateCube(delta, () => {
 	          this.state = this.gettingDrag ? PREPARING : STILL;
 	          this.gettingDrag = false;
-
-	        } );
-
+	        });
 	      }
-
 	    };
-
 	  }
 
-	  rotateLayer( rotation, scramble, callback ) {
-
+	  rotateLayer(rotation, scramble, callback) {
 	    const config = scramble ? 0 : this.flipConfig;
 
-	    const easing = this.flipEasings[ config ];
-	    const duration = this.flipSpeeds[ config ];
-	    const bounce = ( config == 2 ) ? this.bounceCube() : ( () => {} );
+	    const easing = this.flipEasings[config];
+	    const duration = this.flipSpeeds[config];
+	    const bounce = config == 2 ? this.bounceCube() : () => {};
 
-	    this.rotationTween = new Tween( {
+	    this.rotationTween = new Tween({
 	      easing: easing,
 	      duration: duration,
-	      onUpdate: tween => {
-
+	      onUpdate: (tween) => {
 	        let deltaAngle = tween.delta * rotation;
-	        this.group.rotateOnAxis( this.flipAxis, deltaAngle );
-	        bounce( tween.value, deltaAngle, rotation );
-
+	        this.group.rotateOnAxis(this.flipAxis, deltaAngle);
+	        bounce(tween.value, deltaAngle, rotation);
 	      },
 	      onComplete: () => {
+	        if (!scramble) this.onMove();
 
-	        if ( ! scramble ) this.onMove();
+	        const layer = this.flipLayer.slice(0);
 
-	        const layer = this.flipLayer.slice( 0 );
+	        this.game.cube.object.rotation.setFromVector3(
+	          this.snapRotation(this.game.cube.object.rotation.toVector3())
+	        );
+	        this.group.rotation.setFromVector3(
+	          this.snapRotation(this.group.rotation.toVector3())
+	        );
+	        this.deselectLayer(this.flipLayer);
 
-	        this.game.cube.object.rotation.setFromVector3( this.snapRotation( this.game.cube.object.rotation.toVector3() ) );
-	        this.group.rotation.setFromVector3( this.snapRotation( this.group.rotation.toVector3() ) );
-	        this.deselectLayer( this.flipLayer );
-
-	        callback( layer );
-
+	        callback(layer);
 	      },
-	    } );
-
+	    });
 	  }
 
 	  bounceCube() {
-
 	    let fixDelta = true;
 
-	    return ( progress, delta, rotation ) => {
-
-	        if ( progress >= 1 ) {
-
-	          if ( fixDelta ) {
-
-	            delta = ( progress - 1 ) * rotation;
-	            fixDelta = false;
-
-	          }
-
-	          this.game.cube.object.rotateOnAxis( this.flipAxis, delta );
-
+	    return (progress, delta, rotation) => {
+	      if (progress >= 1) {
+	        if (fixDelta) {
+	          delta = (progress - 1) * rotation;
+	          fixDelta = false;
 	        }
 
-	    }
-
+	        this.game.cube.object.rotateOnAxis(this.flipAxis, delta);
+	      }
+	    };
 	  }
 
-	  rotateCube( rotation, callback ) {
-
+	  rotateCube(rotation, callback) {
 	    const config = this.flipConfig;
-	    const easing = [ Easing.Power.Out( 4 ), Easing.Sine.Out(), Easing.Back.Out( 2 ) ][ config ];
-	    const duration = [ 100, 150, 350 ][ config ];
+	    const easing = [Easing.Power.Out(4), Easing.Sine.Out(), Easing.Back.Out(2)][
+	      config
+	    ];
+	    const duration = [100, 150, 350][config];
 
-	    this.rotationTween = new Tween( {
+	    this.rotationTween = new Tween({
 	      easing: easing,
 	      duration: duration,
-	      onUpdate: tween => {
-
-	        this.edges.rotateOnWorldAxis( this.flipAxis, tween.delta * rotation );
-	        this.game.cube.object.rotation.copy( this.edges.rotation );
-
+	      onUpdate: (tween) => {
+	        this.edges.rotateOnWorldAxis(this.flipAxis, tween.delta * rotation);
+	        this.game.cube.object.rotation.copy(this.edges.rotation);
 	      },
 	      onComplete: () => {
-
-	        this.edges.rotation.setFromVector3( this.snapRotation( this.edges.rotation.toVector3() ) );
-	        this.game.cube.object.rotation.copy( this.edges.rotation );
+	        this.edges.rotation.setFromVector3(
+	          this.snapRotation(this.edges.rotation.toVector3())
+	        );
+	        this.game.cube.object.rotation.copy(this.edges.rotation);
 	        callback();
-
 	      },
-	    } );
-
+	    });
 	  }
 
-	  selectLayer( layer ) {
-
-	    this.group.rotation.set( 0, 0, 0 );
-	    this.movePieces( layer, this.game.cube.object, this.group );
+	  selectLayer(layer) {
+	    this.group.rotation.set(0, 0, 0);
+	    this.movePieces(layer, this.game.cube.object, this.group);
 	    this.flipLayer = layer;
-
 	  }
 
-	  deselectLayer( layer ) {
-
-	    this.movePieces( layer, this.group, this.game.cube.object );
+	  deselectLayer(layer) {
+	    this.movePieces(layer, this.group, this.game.cube.object);
 	    this.flipLayer = null;
-
 	  }
 
-	  movePieces( layer, from, to ) {
-
+	  movePieces(layer, from, to) {
 	    from.updateMatrixWorld();
 	    to.updateMatrixWorld();
 
-	    layer.forEach( index => {
+	    layer.forEach((index) => {
+	      const piece = this.game.cube.pieces[index];
 
-	      const piece = this.game.cube.pieces[ index ];
-
-	      piece.applyMatrix( from.matrixWorld );
-	      from.remove( piece );
-	      piece.applyMatrix( new THREE.Matrix4().getInverse( to.matrixWorld ) );
-	      to.add( piece );
-
-	    } );
-
+	      piece.applyMatrix(from.matrixWorld);
+	      from.remove(piece);
+	      piece.applyMatrix(new THREE.Matrix4().getInverse(to.matrixWorld));
+	      to.add(piece);
+	    });
 	  }
 
-	  getLayer( position ) {
-
-	    const scalar = { 2: 6, 3: 3, 4: 4, 5: 3 }[ this.game.cube.size ];
+	  getLayer(position) {
+	    const scalar = { 2: 6, 3: 3, 4: 4, 5: 3 }[this.game.cube.size];
 	    const layer = [];
 
 	    let axis;
 
-	    if ( position === false ) {
-
+	    if (position === false) {
 	      const piece = this.dragIntersect.object.parent;
 
-	      axis = this.getMainAxis( this.flipAxis );
-	      position = piece.position.clone() .multiplyScalar( scalar ) .round();
-
+	      axis = this.getMainAxis(this.flipAxis);
+	      position = piece.position.clone().multiplyScalar(scalar).round();
 	    } else {
-
-	      axis = this.getMainAxis( position );
-
+	      axis = this.getMainAxis(position);
 	    }
 
-	    this.game.cube.pieces.forEach( piece => {
+	    this.game.cube.pieces.forEach((piece) => {
+	      const piecePosition = piece.position
+	        .clone()
+	        .multiplyScalar(scalar)
+	        .round();
 
-	      const piecePosition = piece.position.clone().multiplyScalar( scalar ).round();
-
-	      if ( piecePosition[ axis ] == position[ axis ] ) layer.push( piece.name );
-
-	    } );
+	      if (piecePosition[axis] == position[axis]) layer.push(piece.name);
+	    });
 
 	    return layer;
-
 	  }
 
-	  keyboardMove( type, move, callback ) {
+	  keyboardMove(type, move, callback) {
+	    if (this.state !== STILL) return;
+	    if (this.enabled !== true) return;
 
-	    if ( this.state !== STILL ) return;
-	    if ( this.enabled !== true ) return;
-
-	    if ( type === 'LAYER' ) {
-
-	      const layer = this.getLayer( move.position );
+	    if (type === "LAYER") {
+	      const layer = this.getLayer(move.position);
 
 	      this.flipAxis = new THREE.Vector3();
-	      this.flipAxis[ move.axis ] = 1;
+	      this.flipAxis[move.axis] = 1;
 	      this.state = ROTATING;
 
-	      this.selectLayer( layer );
-	      this.rotateLayer( move.angle, false, layer => {
-
+	      this.selectLayer(layer);
+	      this.rotateLayer(move.angle, false, (layer) => {
 	        this.game.storage.saveGame();
 	        this.state = STILL;
 	        this.checkIsSolved();
-
-	      } );
-
-	    } else if ( type === 'CUBE' ) {
-
+	      });
+	    } else if (type === "CUBE") {
 	      this.flipAxis = new THREE.Vector3();
-	      this.flipAxis[ move.axis ] = 1;
+	      this.flipAxis[move.axis] = 1;
 	      this.state = ROTATING;
 
-	      this.rotateCube( move.angle, () => {
-
+	      this.rotateCube(move.angle, () => {
 	        this.state = STILL;
-
-	      } );
-
+	      });
 	    }
-
 	  }
 
 	  scrambleCube() {
-
-	    if ( this.scramble == null ) {
-
+	    if (this.scramble == null) {
 	      this.scramble = this.game.scrambler;
-	      this.scramble.callback = ( typeof callback !== 'function' ) ? () => {} : callback;
-
+	      this.scramble.callback =
+	        typeof callback !== "function" ? () => {} : callback;
 	    }
 
 	    const converted = this.scramble.converted;
-	    const move = converted[ 0 ];
-	    const layer = this.getLayer( move.position );
+	    const move = converted[0];
+	    const layer = this.getLayer(move.position);
 
 	    this.flipAxis = new THREE.Vector3();
-	    this.flipAxis[ move.axis ] = 1;
+	    this.flipAxis[move.axis] = 1;
 
-	    this.selectLayer( layer );
-	    this.rotateLayer( move.angle, true, () => {
-
+	    this.selectLayer(layer);
+	    this.rotateLayer(move.angle, true, () => {
 	      converted.shift();
 
-	      if ( converted.length > 0 ) {
-
+	      if (converted.length > 0) {
 	        this.scrambleCube();
-
 	      } else {
-
 	        this.scramble = null;
-	        // this.game.storage.saveGame();
-
 	      }
-
-	    } );
-
+	    });
 	  }
 
-	  getIntersect( position, object, multiple ) {
-
+	  getIntersect(position, object, multiple) {
 	    this.raycaster.setFromCamera(
-	      this.draggable.convertPosition( position.clone() ),
+	      this.draggable.convertPosition(position.clone()),
 	      this.game.world.camera
 	    );
 
-	    const intersect = ( multiple )
-	      ? this.raycaster.intersectObjects( object )
-	      : this.raycaster.intersectObject( object );
+	    const intersect = multiple
+	      ? this.raycaster.intersectObjects(object)
+	      : this.raycaster.intersectObject(object);
 
-	    return ( intersect.length > 0 ) ? intersect[ 0 ] : false;
-
+	    return intersect.length > 0 ? intersect[0] : false;
 	  }
 
-	  getMainAxis( vector ) {
-
-	    return Object.keys( vector ).reduce(
-	      ( a, b ) => Math.abs( vector[ a ] ) > Math.abs( vector[ b ] ) ? a : b
+	  getMainAxis(vector) {
+	    return Object.keys(vector).reduce((a, b) =>
+	      Math.abs(vector[a]) > Math.abs(vector[b]) ? a : b
 	    );
-
 	  }
 
-	  detach( child, parent ) {
-
-	    child.applyMatrix( parent.matrixWorld );
-	    parent.remove( child );
-	    this.game.world.scene.add( child );
-
+	  detach(child, parent) {
+	    child.applyMatrix(parent.matrixWorld);
+	    parent.remove(child);
+	    this.game.world.scene.add(child);
 	  }
 
-	  attach( child, parent ) {
-
-	    child.applyMatrix( new THREE.Matrix4().getInverse( parent.matrixWorld ) );
-	    this.game.world.scene.remove( child );
-	    parent.add( child );
-
+	  attach(child, parent) {
+	    child.applyMatrix(new THREE.Matrix4().getInverse(parent.matrixWorld));
+	    this.game.world.scene.remove(child);
+	    parent.add(child);
 	  }
 
-	  addMomentumPoint( delta ) {
-
+	  addMomentumPoint(delta) {
 	    const time = Date.now();
 
-	    this.momentum = this.momentum.filter( moment => time - moment.time < 500 );
+	    this.momentum = this.momentum.filter((moment) => time - moment.time < 500);
 
-	    if ( delta !== false ) this.momentum.push( { delta, time } );
-
+	    if (delta !== false) this.momentum.push({ delta, time });
 	  }
 
 	  getMomentum() {
-
 	    const points = this.momentum.length;
 	    const momentum = new THREE.Vector2();
 
-	    this.addMomentumPoint( false );
+	    this.addMomentumPoint(false);
 
-	    this.momentum.forEach( ( point, index ) => {
-
-	      momentum.add( point.delta.multiplyScalar( index / points ) );
-
-	    } );
+	    this.momentum.forEach((point, index) => {
+	      momentum.add(point.delta.multiplyScalar(index / points));
+	    });
 
 	    return momentum;
-
 	  }
 
-	  roundAngle( angle ) {
-
+	  roundAngle(angle) {
 	    const round = Math.PI / 2;
-	    return Math.sign( angle ) * Math.round( Math.abs( angle) / round ) * round;
-
+	    return Math.sign(angle) * Math.round(Math.abs(angle) / round) * round;
 	  }
 
-	  snapRotation( angle ) {
-
+	  snapRotation(angle) {
 	    return angle.set(
-	      this.roundAngle( angle.x ),
-	      this.roundAngle( angle.y ),
-	      this.roundAngle( angle.z )
+	      this.roundAngle(angle.x),
+	      this.roundAngle(angle.y),
+	      this.roundAngle(angle.z)
 	    );
-
 	  }
 
 	  checkIsSolved() {
-
 	    performance.now();
 
 	    let solved = true;
-	    const sides = { 'x-': [], 'x+': [], 'y-': [], 'y+': [], 'z-': [], 'z+': [] };
+	    const sides = {
+	      "x-": [],
+	      "x+": [],
+	      "y-": [],
+	      "y+": [],
+	      "z-": [],
+	      "z+": [],
+	    };
 
-	    this.game.cube.edges.forEach( edge => {
-
+	    this.game.cube.edges.forEach((edge) => {
 	      const position = edge.parent
-	        .localToWorld( edge.position.clone() )
-	        .sub( this.game.cube.object.position );
+	        .localToWorld(edge.position.clone())
+	        .sub(this.game.cube.object.position);
 
-	      const mainAxis = this.getMainAxis( position );
-	      const mainSign = position.multiplyScalar( 2 ).round()[ mainAxis ] < 1 ? '-' : '+';
+	      const mainAxis = this.getMainAxis(position);
+	      const mainSign =
+	        position.multiplyScalar(2).round()[mainAxis] < 1 ? "-" : "+";
 
-	      sides[ mainAxis + mainSign ].push( edge.name );
+	      sides[mainAxis + mainSign].push(edge.name);
+	    });
 
-	    } );
+	    Object.keys(sides).forEach((side) => {
+	      if (!sides[side].every((value) => value === sides[side][0]))
+	        solved = false;
+	    });
 
-	    Object.keys( sides ).forEach( side => {
-
-	      if ( ! sides[ side ].every( value => value === sides[ side ][ 0 ] ) ) solved = false;
-
-	    } );
-
-	    if ( solved ) this.onSolved();
-
+	    if (solved) this.onSolved();
 	  }
-
 	}
 
 	class Scrambler {
@@ -1884,9 +1819,7 @@
 	}
 
 	class Transition {
-
-	  constructor( game ) {
-
+	  constructor(game) {
 	    this.game = game;
 
 	    this.tweens = {};
@@ -1897,460 +1830,399 @@
 	    };
 
 	    this.activeTransitions = 0;
-
 	  }
 
 	  init() {
-
 	    this.game.controls.disable();
 
 	    this.game.cube.object.position.y = this.data.cubeY;
 	    this.game.cube.animator.position.y = 4;
-	    this.game.cube.animator.rotation.x = - Math.PI / 3;
+	    this.game.cube.animator.rotation.x = -Math.PI / 3;
 	    this.game.world.camera.zoom = this.data.cameraZoom;
 	    this.game.world.camera.updateProjectionMatrix();
 
 	    this.tweens.buttons = {};
-	    this.tweens.timer = [];
 	    this.tweens.title = [];
 	    this.tweens.best = [];
 	    this.tweens.complete = [];
 	    this.tweens.prefs = [];
 	    this.tweens.theme = [];
 	    this.tweens.stats = [];
-
 	  }
 
-	  buttons( show, hide ) {
-
-	    const buttonTween = ( button, show ) => {
-
-	      return new Tween( {
+	  buttons(show, hide) {
+	    const buttonTween = (button, show) => {
+	      return new Tween({
 	        target: button.style,
 	        duration: 300,
-	        easing: show ? Easing.Power.Out( 2 ) : Easing.Power.In( 3 ),
+	        easing: show ? Easing.Power.Out(2) : Easing.Power.In(3),
 	        from: { opacity: show ? 0 : 1 },
 	        to: { opacity: show ? 1 : 0 },
-	        onUpdate: tween => {
-
+	        onUpdate: (tween) => {
 	          const translate = show ? 1 - tween.value : tween.value;
 	          button.style.transform = `translate3d(0, ${translate * 1.5}em, 0)`;
-
 	        },
-	        onComplete: () => button.style.pointerEvents = show ? 'all' : 'none'
-	      } );
-
+	        onComplete: () => (button.style.pointerEvents = show ? "all" : "none"),
+	      });
 	    };
 
-	    hide.forEach( button =>
-	      this.tweens.buttons[ button ] = buttonTween( this.game.dom.buttons[ button ], false )
+	    hide.forEach(
+	      (button) =>
+	        (this.tweens.buttons[button] = buttonTween(
+	          this.game.dom.buttons[button],
+	          false
+	        ))
 	    );
 
-	    setTimeout( () => show.forEach( button => {
-
-	      this.tweens.buttons[ button ] = buttonTween( this.game.dom.buttons[ button ], true );
-
-	    } ), hide ? 500 : 0 );
-
+	    setTimeout(
+	      () =>
+	        show.forEach((button) => {
+	          this.tweens.buttons[button] = buttonTween(
+	            this.game.dom.buttons[button],
+	            true
+	          );
+	        }),
+	      hide ? 500 : 0
+	    );
 	  }
 
-	  cube( show, theming = false ) {
-
+	  cube(show, theming = false) {
 	    this.activeTransitions++;
 
-	    try { this.tweens.cube.stop(); } catch(e) {}
+	    try {
+	      this.tweens.cube.stop();
+	    } catch (e) {}
+
 	    const currentY = this.game.cube.animator.position.y;
 	    const currentRotation = this.game.cube.animator.rotation.x;
 
-	    this.tweens.cube = new Tween( {
+	    this.tweens.cube = new Tween({
 	      duration: show ? 3000 : 1250,
-	      easing: show ? Easing.Elastic.Out( 0.8, 0.6 ) : Easing.Back.In( 1 ),
-	      onUpdate: tween => {
-
+	      easing: show ? Easing.Elastic.Out(0.8, 0.6) : Easing.Back.In(1),
+	      onUpdate: (tween) => {
 	        this.game.cube.animator.position.y = show
-	          ? ( theming ? 0.9 + ( 1 - tween.value ) * 3.5 : ( 1 - tween.value ) * 4 )
+	          ? theming
+	            ? 0.9 + (1 - tween.value) * 3.5
+	            : (1 - tween.value) * 4
 	          : currentY + tween.value * 4;
 
 	        this.game.cube.animator.rotation.x = show
-	          ? ( 1 - tween.value ) * Math.PI / 3
-	          : currentRotation + tween.value * - Math.PI / 3;
-
+	          ? ((1 - tween.value) * Math.PI) / 3
+	          : currentRotation + (tween.value * -Math.PI) / 3;
 	      },
-	    } );
+	    });
 
-	    if ( theming ) {
-
-	      if ( show ) {
-
+	    if (theming) {
+	      if (show) {
 	        this.game.world.camera.zoom = 0.75;
 	        this.game.world.camera.updateProjectionMatrix();
-
 	      } else {
-
-	        setTimeout( () => {
-
+	        setTimeout(() => {
 	          this.game.world.camera.zoom = this.data.cameraZoom;
 	          this.game.world.camera.updateProjectionMatrix();
-
-	        }, 1500 );
-
+	        }, 1500);
 	      }
-
 	    }
 
 	    this.durations.cube = show ? 1500 : 1500;
 
-	    setTimeout( () => this.activeTransitions--, this.durations.cube );
-
+	    setTimeout(() => this.activeTransitions--, this.durations.cube);
 	  }
 
 	  float() {
+	    try {
+	      this.tweens.float.stop();
+	    } catch (e) {}
 
-	    try { this.tweens.float.stop(); } catch(e) {}
-	    this.tweens.float = new Tween( {
+	    this.tweens.float = new Tween({
 	      duration: 1500,
 	      easing: Easing.Sine.InOut(),
 	      yoyo: true,
-	      onUpdate: tween => {
-
-	        this.game.cube.holder.position.y = (-0.02 + tween.value * 0.04); 
+	      onUpdate: (tween) => {
+	        this.game.cube.holder.position.y = -0.02 + tween.value * 0.04;
 	        this.game.cube.holder.rotation.x = 0.005 - tween.value * 0.01;
-	        this.game.cube.holder.rotation.z = - this.game.cube.holder.rotation.x;
+	        this.game.cube.holder.rotation.z = -this.game.cube.holder.rotation.x;
 	        this.game.cube.holder.rotation.y = this.game.cube.holder.rotation.x;
 
 	        this.game.controls.edges.position.y =
 	          this.game.cube.holder.position.y + this.game.cube.object.position.y;
-
 	      },
-	    } );
-
+	    });
 	  }
 
-	  zoom( play, time ) {
-
+	  zoom(play, time) {
 	    this.activeTransitions++;
 
-	    const zoom = ( play ) ? 1 : this.data.cameraZoom;
-	    const duration = ( time > 0 ) ? Math.max( time, 1500 ) : 1500;
-	    const rotations = ( time > 0 ) ? Math.round( duration / 1500 ) : 1;
-	    const easing = Easing.Power.InOut( ( time > 0 ) ? 2 : 3 );
+	    const zoom = play ? 1 : this.data.cameraZoom;
+	    const duration = time > 0 ? Math.max(time, 1500) : 1500;
+	    const rotations = time > 0 ? Math.round(duration / 1500) : 1;
+	    const easing = Easing.Power.InOut(time > 0 ? 2 : 3);
 
-	    this.tweens.zoom = new Tween( {
+	    this.tweens.zoom = new Tween({
 	      target: this.game.world.camera,
 	      duration: duration,
 	      easing: easing,
 	      to: { zoom: zoom },
-	      onUpdate: () => { this.game.world.camera.updateProjectionMatrix(); },
-	    } );
+	      onUpdate: () => {
+	        this.game.world.camera.updateProjectionMatrix();
+	      },
+	    });
 
-	    this.tweens.rotate = new Tween( {
+	    this.tweens.rotate = new Tween({
 	      target: this.game.cube.animator.rotation,
 	      duration: duration,
 	      easing: easing,
-	      to: { y: - Math.PI * 2 * rotations },
-	      onComplete: () => { this.game.cube.animator.rotation.y = 0; },
-	    } );
+	      to: { y: -Math.PI * 2 * rotations },
+	      onComplete: () => {
+	        this.game.cube.animator.rotation.y = 0;
+	      },
+	    });
 
 	    this.durations.zoom = duration;
 
-	    setTimeout( () => this.activeTransitions--, this.durations.zoom );
-
+	    setTimeout(() => this.activeTransitions--, this.durations.zoom);
 	  }
 
-	  elevate( complete ) {
-
+	  elevate(complete) {
 	    this.activeTransitions++;
 
-	    this.tweens.elevate = new Tween( {
+	    (this.tweens.elevate = new Tween({
 	      target: this.game.cube.object.position,
 	      duration: complete ? 1500 : 0,
-	      easing: Easing.Power.InOut( 3 ),
-	      to: { y: complete ? -0.05 : this.data.cubeY }
-	    } );
+	      easing: Easing.Power.InOut(3),
+	      to: { y: complete ? -0.05 : this.data.cubeY },
+	    }));
 
 	    this.durations.elevate = 1500;
 
-	    setTimeout( () => this.activeTransitions--, this.durations.elevate );
-
+	    setTimeout(() => this.activeTransitions--, this.durations.elevate);
 	  }
 
-	  complete( show, best ) {
-
+	  complete(show, best) {
 	    this.activeTransitions++;
 
 	    const text = best ? this.game.dom.texts.best : this.game.dom.texts.complete;
 
-	    if ( text.querySelector( 'span i' ) === null )
-	      text.querySelectorAll( 'span' ).forEach( span => this.splitLetters( span ) );
+	    if (text.querySelector("span i") === null)
+	      text.querySelectorAll("span").forEach((span) => this.splitLetters(span));
 
-	    const letters = text.querySelectorAll( '.icon, i' );
+	    const letters = text.querySelectorAll(".icon, i");
 
-	    this.flipLetters( best ? 'best' : 'complete', letters, show );
+	    this.flipLetters(best ? "best" : "complete", letters, show);
 
 	    text.style.opacity = 1;
 
-	    const duration = this.durations[ best ? 'best' : 'complete' ];
+	    const duration = this.durations[best ? "best" : "complete"];
 
-	    if ( ! show ) setTimeout( () => this.game.dom.texts.timer.style.transform = '', duration );
+	    setTimeout(() => this.activeTransitions--, duration);
+	  }
 
-	    setTimeout( () => this.activeTransitions--, duration );
-
-	  } 
-
-	  stats( show ) {
-
-	    if ( show ) this.game.scores.calcStats();
+	  stats(show) {
+	    if (show) this.game.scores.calcStats();
 
 	    this.activeTransitions++;
 
-	    this.tweens.stats.forEach( tween => { tween.stop(); tween = null; } );
+	    this.tweens.stats.forEach((tween) => {
+	      tween.stop();
+	      tween = null;
+	    });
 
 	    let tweenId = -1;
 
-	    const stats = this.game.dom.stats.querySelectorAll( '.stats' );
-	    const easing = show ? Easing.Power.Out( 2 ) : Easing.Power.In( 3 );
+	    const stats = this.game.dom.stats.querySelectorAll(".stats");
+	    const easing = show ? Easing.Power.Out(2) : Easing.Power.In(3);
 
-	    stats.forEach( ( stat, index ) => {
+	    stats.forEach((stat, index) => {
+	      const delay = index * (show ? 80 : 60);
 
-	      const delay = index * ( show ? 80 : 60 );
-
-	      this.tweens.stats[ tweenId++ ] = new Tween( {
+	      this.tweens.stats[tweenId++] = new Tween({
 	        delay: delay,
 	        duration: 400,
 	        easing: easing,
-	        onUpdate: tween => {
-
-	          const translate = show ? ( 1 - tween.value ) * 2 : tween.value;
-	          const opacity = show ? tween.value : ( 1 - tween.value );
+	        onUpdate: (tween) => {
+	          const translate = show ? (1 - tween.value) * 2 : tween.value;
+	          const opacity = show ? tween.value : 1 - tween.value;
 
 	          stat.style.transform = `translate3d(0, ${translate}em, 0)`;
 	          stat.style.opacity = opacity;
-
-	        }
-	      } );
-
-	    } );
+	        },
+	      });
+	    });
 
 	    this.durations.stats = 0;
 
-	    setTimeout( () => this.activeTransitions--, this.durations.stats );
-
+	    setTimeout(() => this.activeTransitions--, this.durations.stats);
 	  }
 
-	  preferences( show ) {
-
-	    this.ranges( this.game.dom.prefs.querySelectorAll( '.range' ), 'prefs', show );
-
+	  preferences(show) {
+	    this.ranges(this.game.dom.prefs.querySelectorAll(".range"), "prefs", show);
 	  }
 
-	  theming( show ) {
-
-	    this.ranges( this.game.dom.theme.querySelectorAll( '.range' ), 'prefs', show );
-
+	  theming(show) {
+	    this.ranges(this.game.dom.theme.querySelectorAll(".range"), "prefs", show);
 	  }
 
-	  ranges( ranges, type, show ) {
-
+	  ranges(ranges, type, show) {
 	    this.activeTransitions++;
 
-	    this.tweens[ type ].forEach( tween => { tween.stop(); tween = null; } );
+	    this.tweens[type].forEach((tween) => {
+	      tween.stop();
+	      tween = null;
+	    });
 
 	    const easing = show ? Easing.Power.Out(2) : Easing.Power.In(3);
 
 	    let tweenId = -1;
 	    let listMax = 0;
 
-	    ranges.forEach( ( range, rangeIndex ) => {
-	    
-	      const label = range.querySelector( '.range__label' );
-	      const track = range.querySelector( '.range__track-line' );
-	      const handle = range.querySelector( '.range__handle' );
-	      const list = range.querySelectorAll( '.range__list div' );
+	    ranges.forEach((range, rangeIndex) => {
+	      const label = range.querySelector(".range__label");
+	      const track = range.querySelector(".range__track-line");
+	      const handle = range.querySelector(".range__handle");
+	      const list = range.querySelectorAll(".range__list div");
 
-	      const delay = rangeIndex * ( show ? 120 : 100 );
+	      const delay = rangeIndex * (show ? 120 : 100);
 
 	      label.style.opacity = show ? 0 : 1;
 	      track.style.opacity = show ? 0 : 1;
 	      handle.style.opacity = show ? 0 : 1;
-	      handle.style.pointerEvents = show ? 'all' : 'none';
+	      handle.style.pointerEvents = show ? "all" : "none";
 
-	      this.tweens[ type ][ tweenId++ ] = new Tween( {
+	      this.tweens[type][tweenId++] = new Tween({
 	        delay: show ? delay : delay,
 	        duration: 400,
 	        easing: easing,
-	        onUpdate: tween => {
-
-	          const translate = show ? ( 1 - tween.value ) : tween.value;
-	          const opacity = show ? tween.value : ( 1 - tween.value );
+	        onUpdate: (tween) => {
+	          const translate = show ? 1 - tween.value : tween.value;
+	          const opacity = show ? tween.value : 1 - tween.value;
 
 	          label.style.transform = `translate3d(0, ${translate}em, 0)`;
 	          label.style.opacity = opacity;
+	        },
+	      });
 
-	        }
-	      } );
-
-	      this.tweens[ type ][ tweenId++ ] = new Tween( {
+	      this.tweens[type][tweenId++] = new Tween({
 	        delay: show ? delay + 100 : delay,
 	        duration: 400,
 	        easing: easing,
-	        onUpdate: tween => {
-
-	          const translate = show ? ( 1 - tween.value ) : tween.value;
-	          const scale = show ? tween.value : ( 1 - tween.value );
+	        onUpdate: (tween) => {
+	          const translate = show ? 1 - tween.value : tween.value;
+	          const scale = show ? tween.value : 1 - tween.value;
 	          const opacity = scale;
 
 	          track.style.transform = `translate3d(0, ${translate}em, 0) scale3d(${scale}, 1, 1)`;
 	          track.style.opacity = opacity;
+	        },
+	      });
 
-	        }
-	      } );
-
-	      this.tweens[ type ][ tweenId++ ] = new Tween( {
+	      this.tweens[type][tweenId++] = new Tween({
 	        delay: show ? delay + 100 : delay,
 	        duration: 400,
 	        easing: easing,
-	        onUpdate: tween => {
-
-	          const translate = show ? ( 1 - tween.value ) : tween.value;
+	        onUpdate: (tween) => {
+	          const translate = show ? 1 - tween.value : tween.value;
 	          const opacity = 1 - translate;
 	          const scale = 0.5 + opacity * 0.5;
 
 	          handle.style.transform = `translate3d(0, ${translate}em, 0) scale3d(${scale}, ${scale}, ${scale})`;
 	          handle.style.opacity = opacity;
+	        },
+	      });
 
-	        }
-	      } );
-
-	      list.forEach( ( listItem, labelIndex ) => {
-
+	      list.forEach((listItem, labelIndex) => {
 	        listItem.style.opacity = show ? 0 : 1;
 
-	        this.tweens[ type ][ tweenId++ ] = new Tween( {
+	        this.tweens[type][tweenId++] = new Tween({
 	          delay: show ? delay + 200 + labelIndex * 50 : delay,
 	          duration: 400,
 	          easing: easing,
-	          onUpdate: tween => {
-
-	            const translate = show ? ( 1 - tween.value ) : tween.value;
-	            const opacity = show ? tween.value : ( 1 - tween.value );
+	          onUpdate: (tween) => {
+	            const translate = show ? 1 - tween.value : tween.value;
+	            const opacity = show ? tween.value : 1 - tween.value;
 
 	            listItem.style.transform = `translate3d(0, ${translate}em, 0)`;
 	            listItem.style.opacity = opacity;
-
-	          }
-	        } );
-
-	      } );
+	          },
+	        });
+	      });
 
 	      listMax = list.length > listMax ? list.length - 1 : listMax;
 
 	      range.style.opacity = 1;
+	    });
 
-	    } );
+	    this.durations[type] = show
+	      ? (ranges.length - 1) * 100 + 200 + listMax * 50 + 400
+	      : (ranges.length - 1) * 100 + 400;
 
-	    this.durations[ type ] = show
-	      ? ( ( ranges.length - 1 ) * 100 ) + 200 + listMax * 50 + 400
-	      : ( ( ranges.length - 1 ) * 100 ) + 400;
-
-	    setTimeout( () => this.activeTransitions--, this.durations[ type ] ); 
-
+	    setTimeout(() => this.activeTransitions--, this.durations[type]);
 	  }
 
-	  title( show ) {
-
+	  title(show) {
 	    this.activeTransitions++;
 
 	    const title = this.game.dom.texts.title;
 
-	    if ( title.querySelector( 'span i' ) === null )
-	      title.querySelectorAll( 'span' ).forEach( span => this.splitLetters( span ) );
+	    if (title.querySelector("span i") === null)
+	      title.querySelectorAll("span").forEach((span) => this.splitLetters(span));
 
-	    const letters = title.querySelectorAll( 'i' );
+	    const letters = title.querySelectorAll("i");
 
-	    this.flipLetters( 'title', letters, show );
+	    this.flipLetters("title", letters, show);
 
 	    title.style.opacity = 1;
 
 	    const note = this.game.dom.texts.note;
 
-	    this.tweens.title[ letters.length ] = new Tween( {
+	    this.tweens.title[letters.length] = new Tween({
 	      target: note.style,
 	      easing: Easing.Sine.InOut(),
 	      duration: show ? 800 : 400,
 	      yoyo: show ? true : null,
-	      from: { opacity: show ? 0 : ( parseFloat( getComputedStyle( note ).opacity ) ) },
+	      from: { opacity: show ? 0 : parseFloat(getComputedStyle(note).opacity) },
 	      to: { opacity: show ? 1 : 0 },
-	    } );
+	    });
 
-	    setTimeout( () => this.activeTransitions--, this.durations.title );
-
+	    setTimeout(() => this.activeTransitions--, this.durations.title);
 	  }
 
-	  timer( show ) {
-
-	    // this.activeTransitions++;
-
-	    // const timer = this.game.dom.texts.button;
-
-	    // timer.style.opacity = 0;
-	    // this.game.timer.convert();
-	    // this.game.timer.setText();
-
-	    // this.splitLetters( timer );
-	    // const letters = timer.querySelectorAll( 'i' );
-	    // this.flipLetters( 'timer', letters, show );
-
-	    // timer.style.opacity = 1;
-
-	    // setTimeout( () => this.activeTransitions--, this.durations.timer );np
-
-	  }
-
-	  splitLetters( element ) {
-
+	  splitLetters(element) {
 	    const text = element.innerHTML;
 
-	    element.innerHTML = '';
+	    element.innerHTML = "";
 
-	    text.split( '' ).forEach( letter => {
-
-	      const i = document.createElement( 'i' );
+	    text.split("").forEach((letter) => {
+	      const i = document.createElement("i");
 
 	      i.innerHTML = letter;
 
-	      element.appendChild( i );
-
-	    } );
-
+	      element.appendChild(i);
+	    });
 	  }
 
-	  flipLetters( type, letters, show ) {
+	  flipLetters(type, letters, show) {
+	    try {
+	      this.tweens[type].forEach((tween) => tween.stop());
+	    } catch (e) {}
 
-	    try { this.tweens[ type ].forEach( tween => tween.stop() ); } catch(e) {}
-	    letters.forEach( ( letter, index ) => {
-
+	    letters.forEach((letter, index) => {
 	      letter.style.opacity = show ? 0 : 1;
 
-	      this.tweens[ type ][ index ] = new Tween( {
+	      this.tweens[type][index] = new Tween({
 	        easing: Easing.Sine.Out(),
 	        duration: show ? 800 : 400,
 	        delay: index * 50,
-	        onUpdate: tween => {
-
-	          const rotation = show ? ( 1 - tween.value ) * -80 : tween.value * 80;
+	        onUpdate: (tween) => {
+	          const rotation = show ? (1 - tween.value) * -80 : tween.value * 80;
 
 	          letter.style.transform = `rotate3d(0, 1, 0, ${rotation}deg)`;
-	          letter.style.opacity = show ? tween.value : ( 1 - tween.value );
-
+	          letter.style.opacity = show ? tween.value : 1 - tween.value;
 	        },
-	      } );
+	      });
+	    });
 
-	    } );
-
-	    this.durations[ type ] = ( letters.length - 1 ) * 50 + ( show ? 800 : 400 );
-
+	    this.durations[type] = (letters.length - 1) * 50 + (show ? 800 : 400);
 	  }
-
 	}
 
 	const RangeHTML = [
@@ -2964,94 +2836,73 @@
 	}
 
 	class Storage {
-
-	  constructor( game ) {
-
+	  constructor(game) {
 	    this.game = game;
 
-	    const userVersion = localStorage.getItem( 'theCube_version' );
+	    const userVersion = localStorage.getItem("theCube_version");
 
-	    if ( ! userVersion || userVersion !== window.gameVersion ) {
-
+	    if (!userVersion || userVersion !== window.gameVersion) {
 	      this.clearGame();
 	      this.clearPreferences();
 	      this.migrateScores();
-	      // localStorage.setItem( 'theCube_version', window.gameVersion );
-
 	    }
-
 	  }
 
 	  init() {
-
 	    this.loadPreferences();
 	    this.loadScores();
-
 	  }
 
 	  loadGame() {
 	    return;
-
 	  }
 
 	  saveGame() {
-
 	    return;
-
 	  }
 
 	  clearGame() {
-
-	    localStorage.removeItem( 'theCube_playing' );
-	    localStorage.removeItem( 'theCube_savedState' );
-	    localStorage.removeItem( 'theCube_time' );
-
+	    localStorage.removeItem("theCube_playing");
+	    localStorage.removeItem("theCube_savedState");
+	    localStorage.removeItem("theCube_time");
 	  }
 
 	  loadScores() {
 	    return;
-
 	  }
 
 	  saveScores() {
-
 	    return;
-
 	  }
 
 	  clearScores() {
-
 	    return;
-
 	  }
 
 	  migrateScores() {
 	    return;
-
 	  }
 
 	  loadPreferences() {
-
 	    try {
+	      const preferences = JSON.parse(
+	        localStorage.getItem("theCube_preferences")
+	      );
 
-	      const preferences = JSON.parse( localStorage.getItem( 'theCube_preferences' ) );
+	      if (!preferences) throw new Error();
 
-	      if ( ! preferences ) throw new Error();
+	      this.game.cube.size = parseInt(preferences.cubeSize);
+	      this.game.controls.flipConfig = parseInt(preferences.flipConfig);
+	      this.game.scrambler.dificulty = parseInt(preferences.dificulty);
 
-	      this.game.cube.size = parseInt( preferences.cubeSize );
-	      this.game.controls.flipConfig = parseInt( preferences.flipConfig );
-	      this.game.scrambler.dificulty = parseInt( preferences.dificulty );
-
-	      this.game.world.fov = parseFloat( preferences.fov );
+	      this.game.world.fov = parseFloat(preferences.fov);
 	      this.game.world.resize();
 
 	      this.game.themes.colors = preferences.colors;
-	      this.game.themes.setTheme( preferences.theme );
+	      this.game.themes.setTheme(preferences.theme);
 
 	      return true;
-
 	    } catch (e) {
-
 	      this.game.cube.size = 3;
 	      this.game.controls.flipConfig = 0;
 	      this.game.scrambler.dificulty = 1;
@@ -3059,18 +2910,15 @@
 	      this.game.world.fov = 10;
 	      this.game.world.resize();
 
-	      this.game.themes.setTheme( 'cube' );
+	      this.game.themes.setTheme("cube");
 
 	      this.savePreferences();
 
 	      return false;
-
 	    }
-
 	  }
 
 	  savePreferences() {
-
 	    const preferences = {
 	      cubeSize: this.game.cube.size,
 	      flipConfig: this.game.controls.flipConfig,
@@ -3080,16 +2928,12 @@
 	      colors: this.game.themes.colors,
 	    };
 
-	    localStorage.setItem( 'theCube_preferences', JSON.stringify( preferences ) );
-
+	    localStorage.setItem("theCube_preferences", JSON.stringify(preferences));
 	  }
 
 	  clearPreferences() {
-
-	    localStorage.removeItem( 'theCube_preferences' );
-
+	    localStorage.removeItem("theCube_preferences");
 	  }
-
 	}
 
 	class Themes {
@@ -7775,112 +7619,6 @@
 	var index_es6Exports = requireIndex_es6();
 	var solver = /*@__PURE__*/getDefaultExportFromCjs(index_es6Exports);
 
-	class IconsConverter {
-
-		constructor( options ) {
-
-			options = Object.assign( {
-				tagName: 'icon',
-				className: 'icon',
-				styles: false,
-	      icons: {},
-				observe: false,
-				convert: false,
-			}, options || {} );
-
-			this.tagName = options.tagName;
-			this.className = options.className;
-			this.icons = options.icons;
-
-			this.svgTag = document.createElementNS( 'http://www.w3.org/2000/svg', 'svg' );
-			this.svgTag.setAttribute( 'class', this.className );
-
-			if ( options.styles ) this.addStyles();
-			if ( options.convert ) this.convertAllIcons();
-
-			if ( options.observe ) {
-
-				const MutationObserver = window.MutationObserver || window.WebKitMutationObserver;
-				this.observer = new MutationObserver( mutations => { this.convertAllIcons(); } );
-				this.observer.observe( document.documentElement, { childList: true, subtree: true } );
-
-			}
-
-			return this;
-
-		}
-
-		convertAllIcons() {
-
-			document.querySelectorAll( this.tagName ).forEach( icon => { this.convertIcon( icon ); } );
-
-		}
-
-		convertIcon( icon ) {
-
-			const svgData = this.icons[ icon.attributes[0].localName ];
-
-			if ( typeof svgData === 'undefined' ) return;
-
-			const svg = this.svgTag.cloneNode( true );
-			const viewBox = svgData.viewbox.split( ' ' );
-
-			svg.setAttributeNS( null, 'viewBox', svgData.viewbox );
-			svg.style.width = viewBox[2] / viewBox[3] + 'em';
-			svg.style.height = '1em';
-			svg.innerHTML = svgData.content;
-
-			icon.parentNode.replaceChild( svg, icon );
-
-		}
-
-		addStyles() {
-
-			const style = document.createElement( 'style' );
-	    style.innerHTML = `.${this.className} { display: inline-block; font-size: inherit; overflow: visible; vertical-align: -0.125em; preserveAspectRatio: none; }`;
-			document.head.appendChild( style );
-
-		}
-
-	}
-
-	new IconsConverter( {
-
-	  icons: {
-	    settings: {
-	      viewbox: '0 0 512 512',
-	      content: '<path fill="currentColor" d="M444.788 291.1l42.616 24.599c4.867 2.809 7.126 8.618 5.459 13.985-11.07 35.642-29.97 67.842-54.689 94.586a12.016 12.016 0 0 1-14.832 2.254l-42.584-24.595a191.577 191.577 0 0 1-60.759 35.13v49.182a12.01 12.01 0 0 1-9.377 11.718c-34.956 7.85-72.499 8.256-109.219.007-5.49-1.233-9.403-6.096-9.403-11.723v-49.184a191.555 191.555 0 0 1-60.759-35.13l-42.584 24.595a12.016 12.016 0 0 1-14.832-2.254c-24.718-26.744-43.619-58.944-54.689-94.586-1.667-5.366.592-11.175 5.459-13.985L67.212 291.1a193.48 193.48 0 0 1 0-70.199l-42.616-24.599c-4.867-2.809-7.126-8.618-5.459-13.985 11.07-35.642 29.97-67.842 54.689-94.586a12.016 12.016 0 0 1 14.832-2.254l42.584 24.595a191.577 191.577 0 0 1 60.759-35.13V25.759a12.01 12.01 0 0 1 9.377-11.718c34.956-7.85 72.499-8.256 109.219-.007 5.49 1.233 9.403 6.096 9.403 11.723v49.184a191.555 191.555 0 0 1 60.759 35.13l42.584-24.595a12.016 12.016 0 0 1 14.832 2.254c24.718 26.744 43.619 58.944 54.689 94.586 1.667 5.366-.592 11.175-5.459 13.985L444.788 220.9a193.485 193.485 0 0 1 0 70.2zM336 256c0-44.112-35.888-80-80-80s-80 35.888-80 80 35.888 80 80 80 80-35.888 80-80z" />',
-	    },
-	    back: {
-	      viewbox: '0 0 512 512',
-	      content: '<path transform="translate(512, 0) scale(-1,1)" fill="currentColor" d="M503.691 189.836L327.687 37.851C312.281 24.546 288 35.347 288 56.015v80.053C127.371 137.907 0 170.1 0 322.326c0 61.441 39.581 122.309 83.333 154.132 13.653 9.931 33.111-2.533 28.077-18.631C66.066 312.814 132.917 274.316 288 272.085V360c0 20.7 24.3 31.453 39.687 18.164l176.004-152c11.071-9.562 11.086-26.753 0-36.328z" />',
-	    },
-	    trophy: {
-	      viewbox: '0 0 576 512',
-	      content: '<path fill="currentColor" d="M552 64H448V24c0-13.3-10.7-24-24-24H152c-13.3 0-24 10.7-24 24v40H24C10.7 64 0 74.7 0 88v56c0 66.5 77.9 131.7 171.9 142.4C203.3 338.5 240 360 240 360v72h-48c-35.3 0-64 20.7-64 56v12c0 6.6 5.4 12 12 12h296c6.6 0 12-5.4 12-12v-12c0-35.3-28.7-56-64-56h-48v-72s36.7-21.5 68.1-73.6C498.4 275.6 576 210.3 576 144V88c0-13.3-10.7-24-24-24zM64 144v-16h64.2c1 32.6 5.8 61.2 12.8 86.2-47.5-16.4-77-49.9-77-70.2zm448 0c0 20.2-29.4 53.8-77 70.2 7-25 11.8-53.6 12.8-86.2H512v16zm-127.3 4.7l-39.6 38.6 9.4 54.6c1.7 9.8-8.7 17.2-17.4 12.6l-49-25.8-49 25.8c-8.8 4.6-19.1-2.9-17.4-12.6l9.4-54.6-39.6-38.6c-7.1-6.9-3.2-19 6.7-20.5l54.8-8 24.5-49.6c4.4-8.9 17.1-8.9 21.5 0l24.5 49.6 54.8 8c9.6 1.5 13.5 13.6 6.4 20.5z" />',
-	    },
-	    cancel: {
-	      viewbox: '0 0 352 512',
-	      content: '<path fill="currentColor" d="M242.72 256l100.07-100.07c12.28-12.28 12.28-32.19 0-44.48l-22.24-22.24c-12.28-12.28-32.19-12.28-44.48 0L176 189.28 75.93 89.21c-12.28-12.28-32.19-12.28-44.48 0L9.21 111.45c-12.28 12.28-12.28 32.19 0 44.48L109.28 256 9.21 356.07c-12.28 12.28-12.28 32.19 0 44.48l22.24 22.24c12.28 12.28 32.2 12.28 44.48 0L176 322.72l100.07 100.07c12.28 12.28 32.2 12.28 44.48 0l22.24-22.24c12.28-12.28 12.28-32.19 0-44.48L242.72 256z" />',
-	    },
-	    theme: {
-	      viewbox: '0 0 512 512',
-	      content: '<path fill="currentColor" d="M204.3 5C104.9 24.4 24.8 104.3 5.2 203.4c-37 187 131.7 326.4 258.8 306.7 41.2-6.4 61.4-54.6 42.5-91.7-23.1-45.4 9.9-98.4 60.9-98.4h79.7c35.8 0 64.8-29.6 64.9-65.3C511.5 97.1 368.1-26.9 204.3 5zM96 320c-17.7 0-32-14.3-32-32s14.3-32 32-32 32 14.3 32 32-14.3 32-32 32zm32-128c-17.7 0-32-14.3-32-32s14.3-32 32-32 32 14.3 32 32-14.3 32-32 32zm128-64c-17.7 0-32-14.3-32-32s14.3-32 32-32 32 14.3 32 32-14.3 32-32 32zm128 64c-17.7 0-32-14.3-32-32s14.3-32 32-32 32 14.3 32 32-14.3 32-32 32z"/>',
-	    },
-	    reset: {
-	      viewbox: '0 0 512 512',
-	      content: '<path fill="currentColor" d="M370.72 133.28C339.458 104.008 298.888 87.962 255.848 88c-77.458.068-144.328 53.178-162.791 126.85-1.344 5.363-6.122 9.15-11.651 9.15H24.103c-7.498 0-13.194-6.807-11.807-14.176C33.933 94.924 134.813 8 256 8c66.448 0 126.791 26.136 171.315 68.685L463.03 40.97C478.149 25.851 504 36.559 504 57.941V192c0 13.255-10.745 24-24 24H345.941c-21.382 0-32.09-25.851-16.971-40.971l41.75-41.749zM32 296h134.059c21.382 0 32.09 25.851 16.971 40.971l-41.75 41.75c31.262 29.273 71.835 45.319 114.876 45.28 77.418-.07 144.315-53.144 162.787-126.849 1.344-5.363 6.122-9.15 11.651-9.15h57.304c7.498 0 13.194 6.807 11.807 14.176C478.067 417.076 377.187 504 256 504c-66.448 0-126.791-26.136-171.315-68.685L48.97 471.03C33.851 486.149 8 475.441 8 454.059V320c0-13.255 10.745-24 24-24z" />',
-	    },
-	    trash: {
-	      viewbox: '0 0 448 512',
-	      content: '<path fill="currentColor" d="M432 32H312l-9.4-18.7A24 24 0 0 0 281.1 0H166.8a23.72 23.72 0 0 0-21.4 13.3L136 32H16A16 16 0 0 0 0 48v32a16 16 0 0 0 16 16h416a16 16 0 0 0 16-16V48a16 16 0 0 0-16-16zM53.2 467a48 48 0 0 0 47.9 45h245.8a48 48 0 0 0 47.9-45L416 128H32z" />',
-	    },
-	  },
-
-	  convert: true,
-
-	} );
-
 	const STATE = {
 	  Menu: 0,
 	  Playing: 1,
@@ -7891,29 +7629,27 @@
 	};
 
 	const BUTTONS = {
-	  Menu: [ 'stats', 'prefs' ],
-	  Playing: [ 'back' ],
+	  Menu: ["stats", "prefs"],
+	  Playing: ["back"],
 	  Complete: [],
 	  Stats: [],
-	  Prefs: [ 'back', 'theme' ],
-	  Theme: [ 'back', 'reset' ],
+	  Prefs: ["back", "theme"],
+	  Theme: ["back", "reset"],
 	  None: [],
 	};
 
 	const SHOW = true;
 	const HIDE = false;
-	let solutionSteps = '';
+	let solutionSteps = "";
 	let scramble = [];
 	let presentIndex = 0;
 
 	class Game {
-
 	  constructor() {
 	    this.setup2DCube();
-	    // this.setup3DCube();
 	  }
 
-	  setup2DCube(){
+	  setup2DCube() {
 	    const FACE_COLORS = {
 	      U: "#fff7ff", // white (Top)
 	      D: "#ffef48", // yellow (Bottom)
@@ -7925,16 +7661,9 @@
 
 	    let selectedColor = null;
 	    let currentFace = "F";
-	    // const cubeState = {
-	    //   U: Array(9).fill("#555"),
-	    //   D: Array(9).fill("#555"),
-	    //   F: Array(9).fill("#555"),
-	    //   B: Array(9).fill("#555"),
-	    //   L: Array(9).fill("#555"),
-	    //   R: Array(9).fill("#555"),
-	    // };
+
 	    const cubeState = {
-	    U: [
+	      U: [
 	        "#41aac8",
 	        "#41aac8",
 	        "#41aac8",
@@ -7943,9 +7672,9 @@
 	        "#41aac8",
 	        "#41aac8",
 	        "#41aac8",
-	        "#41aac8"
-	    ],
-	    D: [
+	        "#41aac8",
+	      ],
+	      D: [
 	        "#82ca38",
 	        "#82ca38",
 	        "#82ca38",
@@ -7954,9 +7683,9 @@
 	        "#82ca38",
 	        "#82ca38",
 	        "#82ca38",
-	        "#82ca38"
-	    ],
-	    F: [
+	        "#82ca38",
+	      ],
+	      F: [
 	        "#fff7ff",
 	        "#fff7ff",
 	        "#fff7ff",
@@ -7965,9 +7694,9 @@
 	        "#fff7ff",
 	        "#fff7ff",
 	        "#fff7ff",
-	        "#fff7ff"
-	    ],
-	    B: [
+	        "#fff7ff",
+	      ],
+	      B: [
 	        "#ffef48",
 	        "#ffef48",
 	        "#ffef48",
@@ -7976,9 +7705,9 @@
 	        "#ffef48",
 	        "#ffef48",
 	        "#ffef48",
-	        "#ffef48"
-	    ],
-	    L: [
+	        "#ffef48",
+	      ],
+	      L: [
 	        "#ff8c0a",
 	        "#ff8c0a",
 	        "#ff8c0a",
@@ -7987,9 +7716,9 @@
 	        "#ff8c0a",
 	        "#ff8c0a",
 	        "#ff8c0a",
-	        "#ff8c0a"
-	    ],
-	    R: [
+	        "#ff8c0a",
+	      ],
+	      R: [
 	        "#ef3923",
 	        "#ef3923",
 	        "#ef3923",
@@ -7998,9 +7727,9 @@
 	        "#ef3923",
 	        "#ef3923",
 	        "#ef3923",
-	        "#ef3923"
-	    ]
-	  };
+	        "#ef3923",
+	      ],
+	    };
 
 	    const adjacentFaces = {
 	      F: { top: "U", bottom: "D", left: "L", right: "R" },
@@ -8008,7 +7737,7 @@
 	      L: { top: "U", bottom: "D", left: "B", right: "F" },
 	      R: { top: "U", bottom: "D", left: "F", right: "B" },
 	      U: { top: "B", bottom: "F", left: "L", right: "R" },
-	      D: { top: "F", bottom: "B", left: "L", right: "R" }
+	      D: { top: "F", bottom: "B", left: "L", right: "R" },
 	    };
 	    const colorButtons = document.getElementById("colorButtons");
 	    const face = document.getElementById("face");
@@ -8017,7 +7746,7 @@
 	    const output = document.getElementById("output");
 
 	    // Create color selector buttons
-	    Object.entries(FACE_COLORS).forEach(([label, color],i) => {
+	    Object.entries(FACE_COLORS).forEach(([label, color], i) => {
 	      const btn = document.createElement("button");
 	      btn.title = label;
 	      btn.style.backgroundColor = color;
@@ -8029,7 +7758,7 @@
 
 	      btn.addEventListener("click", () => {
 	        selectedColor = color;
-	        [...colorButtons.children].forEach(b => b.style.outline = "none");
+	        [...colorButtons.children].forEach((b) => (b.style.outline = "none"));
 	        btn.style.outline = "2px solid white";
 	      });
 	      cubeState[label][4] = color;
@@ -8046,8 +7775,8 @@
 	      div.style.backgroundColor = "#555";
 	      div.style.cursor = "pointer";
 	      div.style.border = "1px solid #999";
-	      div.addEventListener("click", () => {
-	        if(i==4){
+	      div.addEventListener("click", (event) => {
+	        if (i == 4) {
 	          event.preventDefault();
 	          return;
 	        }
@@ -8068,12 +7797,15 @@
 	      });
 
 	      // The solver expects the faces in FRUDLB order.
-	      const faceOrder = ['F', 'R', 'U', 'D', 'L', 'B'];
+	      const faceOrder = ["F", "R", "U", "D", "L", "B"];
 
-	      const data = faceOrder.map(faceLetter =>
-	        state[faceLetter].map(hexColor => colorToFaceLetter[hexColor] || 'X') // 'X' for gray/unassigned
-	          .join('')
-	      ).join('');
+	      const data = faceOrder
+	        .map((faceLetter) =>
+	          state[faceLetter]
+	            .map((hexColor) => colorToFaceLetter[hexColor] || "X") // 'X' for gray/unassigned
+	            .join("")
+	        )
+	        .join("");
 
 	      return data;
 	    };
@@ -8082,7 +7814,7 @@
 	    faceSelector.addEventListener("change", (event) => {
 	      const newFace = event.target.value;
 	      const currentColors = cubeState[currentFace];
-	      currentColors.every(color => color !== "#555");
+	      currentColors.every((color) => color !== "#555");
 
 	      // if (!isComplete) {
 	      //   alert(`❗ Fill all 9 cuboids on the "${currentFace}" face before switching.`);
@@ -8107,7 +7839,9 @@
 	      usedColors.delete("#555");
 
 	      if (usedColors.size !== 6) {
-	        output.textContent = `❌ Cube must use exactly 6 colors.\nUsed: ${[...usedColors].join(', ')}`;
+	        output.textContent = `❌ Cube must use exactly 6 colors.\nUsed: ${[
+          ...usedColors,
+        ].join(", ")}`;
 	        return;
 	      }
 
@@ -8117,14 +7851,20 @@
 	        colorCounts[color] = (colorCounts[color] || 0) + 1;
 	      }
 
-	      const overused = Object.entries(colorCounts).filter(([color, count]) => count > 9);
+	      const overused = Object.entries(colorCounts).filter(
+	        ([color, count]) => count > 9
+	      );
 	      if (overused.length > 0) {
-	        const msgs = overused.map(([color, count]) => `${color} used ${count} times`);
-	        output.textContent = `❌ Each color can only appear up to 9 times.\n` + msgs.join('\n');
+	        const msgs = overused.map(
+	          ([color, count]) => `${color} used ${count} times`
+	        );
+	        output.textContent =
+	          `❌ Each color can only appear up to 9 times.\n` + msgs.join("\n");
 	        return;
 	      }
 
-	      output.textContent = `✅ Cube is valid!\n` + JSON.stringify(cubeState, null, 2);
+	      output.textContent =
+	        `✅ Cube is valid!\n` + JSON.stringify(cubeState, null, 2);
 
 	      const solverString = convertStateForSolver(cubeState);
 	      console.log("solverString", solverString);
@@ -8132,27 +7872,20 @@
 	      const solution = solver(solverString.toLowerCase());
 	      console.log("solution", solution);
 
-	      if (solution && typeof solution === 'string') {
+	      if (solution && typeof solution === "string") {
 	        // The solver returns moves with 'prime' (e.g., "Rprime"),
 	        // but the scrambler expects an apostrophe (e.g., "R'").
 	        const scramblerFriendlySolution = solution.replace(/prime/g, "'");
 
-	        console.log('Solution:', scramblerFriendlySolution);
+	        console.log("Solution:", scramblerFriendlySolution);
 	        solutionSteps = scramblerFriendlySolution;
 	        output.textContent += `\nSolution: ${scramblerFriendlySolution}`;
-	        
+
 	        // Use the game's scrambler and controls to animate the solution.
-	        // this.scrambler.scramble(scramblerFriendlySolution);
-	        // this.controls.scrambleCube();
-	        // const customCube = document.querySelector('#custom-cube');
-	        // customCube.style.display = 'none'; 
-	        // const mainUi = document.querySelector('#main-ui');
-	        // mainUi.style.display = 'block';  
 	        this.setup3DCube();
 	      } else {
-	        output.textContent += '\n❌ No solution found.';
+	        output.textContent += "\n❌ No solution found.";
 	      }
-
 	    });
 
 	    // Initialize face with default face data
@@ -8164,7 +7897,7 @@
 	    function createStrip(id) {
 	      const container = document.getElementById(id);
 	      console.log("container", id);
-	      container.innerHTML = '';
+	      container.innerHTML = "";
 	      for (let i = 0; i < 9; i++) {
 	        console.log("i", i);
 	        const tile = document.createElement("div");
@@ -8189,11 +7922,6 @@
 
 	        for (let i = 0; i < 9; i++) {
 	          tiles[i].style.backgroundColor = colors[i];
-	          // if (!tiles[i]) continue;
-	          // if (stripId === "adj-top") tiles[i].style.backgroundColor = colors[i];
-	          // if (stripId === "adj-bottom") tiles[i].style.backgroundColor = colors[6 + i];
-	          // if (stripId === "adj-left") tiles[i].style.backgroundColor = colors[i * 3];
-	          // if (stripId === "adj-right") tiles[i].style.backgroundColor = colors[i * 3 + 2];
 	        }
 	      }
 
@@ -8210,50 +7938,48 @@
 	    updateSurroundingFaces();
 	  }
 
-	  setup3DCube(){
-	    const customCube = document.querySelector('#custom-cube');
-	    customCube.style.display = 'none'; 
-	    const mainUi = document.querySelector('#main-ui');
-	    mainUi.style.display = 'block';  
+	  setup3DCube() {
+	    const customCube = document.querySelector("#custom-cube");
+	    customCube.style.display = "none";
+	    const mainUi = document.querySelector("#main-ui");
+	    mainUi.style.display = "block";
 	    this.dom = {
-	      ui: document.querySelector( '.ui' ),
-	      game: document.querySelector( '.ui__game' ),
-	      back: document.querySelector( '.ui__background' ),
-	      prefs: document.querySelector( '.ui__prefs' ),
-	      theme: document.querySelector( '.ui__theme' ),
-	      stats: document.querySelector( '.ui__stats' ),
+	      ui: document.querySelector(".ui"),
+	      game: document.querySelector(".ui__game"),
+	      back: document.querySelector(".ui__background"),
+	      prefs: document.querySelector(".ui__prefs"),
+	      theme: document.querySelector(".ui__theme"),
+	      stats: document.querySelector(".ui__stats"),
 	      texts: {
-	        title: document.querySelector( '.text--title' ),
-	        note: document.querySelector( '.text--note' ),
-	        button: document.querySelector( '.text--timer' ),
-	        complete: document.querySelector( '.text--complete' ),
-	        best: document.querySelector( '.text--best-time' ),
-	        theme: document.querySelector( '.text--theme' ),
-	        step: document.querySelector( '.text--step' ),
+	        title: document.querySelector(".text--title"),
+	        note: document.querySelector(".text--note"),
+	        complete: document.querySelector(".text--complete"),
+	        best: document.querySelector(".text--best-time"),
+	        theme: document.querySelector(".text--theme"),
+	        step: document.querySelector(".text--step"),
 	      },
 	      buttons: {
-	        prefs: document.querySelector( '.btn--prefs' ),
-	        back: document.querySelector( '.btn--back' ),
-	        stats: document.querySelector( '.btn--stats' ),
-	        reset: document.querySelector( '.btn--reset' ),
-	        theme: document.querySelector( '.btn--theme' ),
-	        next: document.querySelector( '.btn--next' ),
-	        prev: document.querySelector( '.btn--prev' ),
+	        prefs: document.querySelector(".btn--prefs"),
+	        back: document.querySelector(".btn--back"),
+	        stats: document.querySelector(".btn--stats"),
+	        reset: document.querySelector(".btn--reset"),
+	        theme: document.querySelector(".btn--theme"),
+	        next: document.querySelector(".btn--next"),
+	        prev: document.querySelector(".btn--prev"),
 	      },
 	    };
 
-	    this.world = new World( this );
-	    this.cube = new Cube( this );
-	    this.controls = new Controls( this );
-	    this.scrambler = new Scrambler( this );
-	    this.transition = new Transition( this );
-	    // this.timer = new Timer( this );
-	    this.preferences = new Preferences( this );
-	    this.scores = new Scores( this );
-	    this.storage = new Storage( this );
-	    this.confetti = new Confetti( this );
-	    this.themes = new Themes( this );
-	    this.themeEditor = new ThemeEditor( this );
+	    this.world = new World(this);
+	    this.cube = new Cube(this);
+	    this.controls = new Controls(this);
+	    this.scrambler = new Scrambler(this);
+	    this.transition = new Transition(this);
+	    this.preferences = new Preferences(this);
+	    this.scores = new Scores(this);
+	    this.storage = new Storage(this);
+	    this.confetti = new Confetti(this);
+	    this.themes = new Themes(this);
+	    this.themeEditor = new ThemeEditor(this);
 
 	    this.initActions();
 
@@ -8269,459 +7995,391 @@
 	    this.storage.loadGame();
 	    this.scores.calcStats();
 
-	    setTimeout( () => {
-
+	    setTimeout(() => {
 	      this.transition.float();
-	      this.transition.cube( SHOW );
+	      this.transition.cube(SHOW);
 
-	      setTimeout( () => this.transition.title( SHOW ), 700 );
-	      setTimeout( () => this.transition.buttons( BUTTONS.Menu, BUTTONS.None ), 1000 );
-
-	    }, 500 );
+	      setTimeout(() => this.transition.title(SHOW), 700);
+	      setTimeout(
+	        () => this.transition.buttons(BUTTONS.Menu, BUTTONS.None),
+	        1000
+	      );
+	    }, 500);
 	  }
 
 	  initActions() {
-
 	    let tappedTwice = false;
-	    // this.game( SHOW );
 
+	    this.dom.game.addEventListener(
+	      "click",
+	      (event) => {
+	        if (this.transition.activeTransitions > 0) return;
+	        if (this.state === STATE.Playing) return;
 
-	    this.dom.game.addEventListener( 'click', event => {
+	        if (this.state === STATE.Menu) {
+	          if (!tappedTwice) {
+	            tappedTwice = true;
+	            setTimeout(() => (tappedTwice = false), 300);
+	            return false;
+	          }
 
-	      if ( this.transition.activeTransitions > 0 ) return;
-	      if ( this.state === STATE.Playing ) return;
-
-	      if ( this.state === STATE.Menu ) {
-
-	        if ( ! tappedTwice ) {
-
-	          tappedTwice = true;
-	          setTimeout( () => tappedTwice = false, 300 );
-	          return false;
-
+	          this.game(SHOW);
+	        } else if (this.state === STATE.Complete) {
+	          this.complete(HIDE);
+	        } else if (this.state === STATE.Stats) {
+	          this.stats(HIDE);
 	        }
-
-	        this.game( SHOW );
-
-	      } else if ( this.state === STATE.Complete ) {
-
-	        this.complete( HIDE );
-
-	      } else if ( this.state === STATE.Stats ) {
-
-	        this.stats( HIDE );
-
-	      } 
-
-	    }, false );
+	      },
+	      false
+	    );
 
 	    this.controls.onMove = () => {
-
-	      if ( this.newGame ) {
-	        
-	        // this.timer.start( true );
+	      if (this.newGame) {
 	        this.newGame = false;
-
 	      }
-
 	    };
 
-	    this.dom.buttons.back.onclick = event => {
+	    this.dom.buttons.back.onclick = (event) => {
+	      if (this.transition.activeTransitions > 0) return;
 
-	      if ( this.transition.activeTransitions > 0 ) return;
-
-	      if ( this.state === STATE.Playing ) {
-
-	        this.game( HIDE );
-
-	      } else if ( this.state === STATE.Prefs ) {
-
-	        this.prefs( HIDE );
-
-	      } else if ( this.state === STATE.Theme ) {
-
-	        this.theme( HIDE );
-
+	      if (this.state === STATE.Playing) {
+	        this.game(HIDE);
+	      } else if (this.state === STATE.Prefs) {
+	        this.prefs(HIDE);
+	      } else if (this.state === STATE.Theme) {
+	        this.theme(HIDE);
 	      }
-
 	    };
 
-	    this.dom.buttons.reset.onclick = event => {
-
-	      if ( this.state === STATE.Theme ) {
-
+	    this.dom.buttons.reset.onclick = (event) => {
+	      if (this.state === STATE.Theme) {
 	        this.themeEditor.resetTheme();
-
 	      }
-	      
 	    };
 
-	    this.dom.buttons.prefs.onclick = event => this.prefs( SHOW );
+	    this.dom.buttons.prefs.onclick = (event) => this.prefs(SHOW);
 
-	    this.dom.buttons.theme.onclick = event => this.theme( SHOW );
+	    this.dom.buttons.theme.onclick = (event) => this.theme(SHOW);
 
-	    this.dom.buttons.stats.onclick = event => this.stats( SHOW );
+	    this.dom.buttons.stats.onclick = (event) => this.stats(SHOW);
 
-	    this.controls.onSolved = () => this.complete( SHOW );
-
+	    this.controls.onSolved = () => this.complete(SHOW);
 	  }
 
 	  _getScrambleFromSolution(solution) {
-	    const moves = solution.split(' ');
-	    const reversedAndInvertedMoves = moves.reverse().map(move => {
+	    const moves = solution.split(" ");
+	    const reversedAndInvertedMoves = moves.reverse().map((move) => {
 	      if (move.endsWith("'")) {
 	        return move.slice(0, -1);
 	      }
-	      if (move.endsWith('2')) {
+	      if (move.endsWith("2")) {
 	        return move;
 	      }
 	      return `${move}'`;
 	    });
-	    return reversedAndInvertedMoves.join(' ');
+	    return reversedAndInvertedMoves.join(" ");
 	  }
-	  getNewOutput(sol){
+	  getNewOutput(sol) {
 	    // The solution string is space-separated, so we can just split it.
 	    // return sol.split(' ').filter(move => move !== '');
-	        let newData = [];
-	    [...sol].map((data,index)=>{
-	      let st = '';
-	      if(data == 'R'|| data == 'U'|| data == 'F'|| data == 'L'|| data == 'D'|| data == 'B'){
-	        st = st+data;
-	        if(sol[index+1] == `'` || sol[index+1]=='2')
-	          st= st+sol[index+1];
-	        console.log('data',st,data);
+	    let newData = [];
+	    [...sol].map((data, index) => {
+	      let st = "";
+	      if (
+	        data == "R" ||
+	        data == "U" ||
+	        data == "F" ||
+	        data == "L" ||
+	        data == "D" ||
+	        data == "B"
+	      ) {
+	        st = st + data;
+	        if (sol[index + 1] == `'` || sol[index + 1] == "2")
+	          st = st + sol[index + 1];
+	        console.log("data", st, data);
 	        newData.push(st);
 	      }
 	    });
 	    return newData;
 	  }
-	  
+
 	  nextButtonEvent() {
 	    const solutionStepsArray = this.solutionStepsArray;
-	    console.log("nextButtonEvent", this.dom.buttons.next);
 
-	    this.dom.buttons.next.onclick = event => {
-	        console.log("nextButtonEvent", this.dom.buttons.next);
-	        if (presentIndex >= solutionStepsArray.length) {
-	            console.log('End of solution.');
-	            
-	            this.dom.buttons.next.style.pointerEvents = 'none';
-	            this.dom.buttons.next.style.opacity = '0.5';
-	            this.dom.buttons.prev.style.pointerEvents = 'none';
-	            this.dom.buttons.prev.style.opacity = '0.5';
-	            
-	            this.dom.texts.step.style.opacity = 0;
+	    this.dom.buttons.next.onclick = (event) => {
+	      if (presentIndex >= solutionStepsArray.length) {
+	        this.dom.buttons.next.style.pointerEvents = "none";
+	        this.dom.buttons.next.style.opacity = "0.5";
+	        this.dom.buttons.prev.style.pointerEvents = "none";
+	        this.dom.buttons.prev.style.opacity = "0.5";
 
-	            setTimeout(() => {
-	                this.complete(SHOW);
-	            }, 500);
-	            return;
-	        }
-	        this.dom.buttons.prev.style.pointerEvents = 'all';
-	        this.dom.buttons.prev.style.opacity = '1';
-	        const presentStep = solutionStepsArray[presentIndex++];
-	        const totalSteps = solutionStepsArray.length;
+	        this.dom.texts.step.style.opacity = 0;
 
-	        const prevStep = solutionStepsArray[presentIndex - 2] || '-';
-	        const currStep = solutionStepsArray[presentIndex - 1] || 'Start';
-	        const nextStep = solutionStepsArray[presentIndex] || '-';
-	        this.dom.texts.step.querySelector('span').textContent = `(${presentIndex}/${totalSteps}) Prev: ${prevStep} | Current: ${currStep} | Next: ${nextStep}`;
+	        setTimeout(() => {
+	          this.complete(SHOW);
+	        }, 500);
+	        return;
+	      }
+	      this.dom.buttons.prev.style.pointerEvents = "none";
+	      this.dom.buttons.prev.style.opacity = "0.5";
+	      this.dom.buttons.next.style.pointerEvents = "none";
+	      this.dom.buttons.next.style.opacity = "0.5";
+	      const presentStep = solutionStepsArray[presentIndex++];
+	      const totalSteps = solutionStepsArray.length;
 
-	        this.scrambler.scramble(presentStep);
-	        this.controls.scrambleCube();
+	      const prevStep = solutionStepsArray[presentIndex - 2] || "-";
+	      const currStep = solutionStepsArray[presentIndex - 1] || "Start";
+	      const nextStep = solutionStepsArray[presentIndex] || "-";
+	      this.dom.texts.step.querySelector(
+	        "span"
+	      ).textContent = `(${presentIndex}/${totalSteps}) Prev: ${prevStep} | Current: ${currStep} | Next: ${nextStep}`;
 
+	      this.scrambler.scramble(presentStep);
+	      this.controls.scrambleCube();
+	      setTimeout(() => {
+	        this.dom.buttons.prev.style.pointerEvents = "all";
+	        this.dom.buttons.prev.style.opacity = "1";
+	        this.dom.buttons.next.style.pointerEvents = "all";
+	        this.dom.buttons.next.style.opacity = "1";
+	      }, 500);
 	    };
 	  }
 
 	  prevButtonEvent() {
 	    const solutionStepsArray = this.solutionStepsArray;
 
-	    this.dom.buttons.prev.onclick = event => {
-	      console.log("prevButtonEvent", this.dom.buttons.prev);
+	    this.dom.buttons.prev.onclick = (event) => {
 	      if (presentIndex <= 0) {
-	        console.log('Start of solution.');
+	        console.log("Start of solution.");
 	        // Optionally disable the button
-	        this.dom.buttons.prev.style.pointerEvents = 'none';
-	        this.dom.buttons.prev.style.opacity = '0.5';
+	        this.dom.buttons.prev.style.pointerEvents = "none";
+	        this.dom.buttons.prev.style.opacity = "0.5";
 	        return;
 	      }
-	      this.dom.buttons.next.style.pointerEvents = 'all';
-	      this.dom.buttons.next.style.opacity = '1';
+	      this.dom.buttons.prev.style.pointerEvents = "none";
+	      this.dom.buttons.prev.style.opacity = "0.5";
+	      this.dom.buttons.next.style.pointerEvents = "none";
+	      this.dom.buttons.next.style.opacity = "0.5";
 
 	      presentIndex--;
 	      const totalSteps = solutionStepsArray.length;
 	      const presentStep = solutionStepsArray[presentIndex];
 	      const invertedStep = this._getScrambleFromSolution(presentStep);
 
-	      const prevStep = solutionStepsArray[presentIndex - 2] || '-';
-	      const currStep = solutionStepsArray[presentIndex - 1] || 'Start';
-	      const nextStep = solutionStepsArray[presentIndex] || '-';
-	      this.dom.texts.step.querySelector('span').textContent = `(${presentIndex}/${totalSteps}) Prev: ${prevStep} | Current: ${currStep} | Next: ${nextStep}`;
+	      const prevStep = solutionStepsArray[presentIndex - 2] || "-";
+	      const currStep = solutionStepsArray[presentIndex - 1] || "Start";
+	      const nextStep = solutionStepsArray[presentIndex] || "-";
+	      this.dom.texts.step.querySelector(
+	        "span"
+	      ).textContent = `(${presentIndex}/${totalSteps}) Prev: ${prevStep} | Current: ${currStep} | Next: ${nextStep}`;
 
 	      this.scrambler.scramble(invertedStep);
 	      this.controls.scrambleCube();
+	      setTimeout(() => {
+	        this.dom.buttons.prev.style.pointerEvents = "all";
+	        this.dom.buttons.prev.style.opacity = "1";
+	        this.dom.buttons.next.style.pointerEvents = "all";
+	        this.dom.buttons.next.style.opacity = "1";
+	      }, 500);
 	    };
 	  }
 
-
-	  game( show ) {
-
-	    if ( show ) {
-
-	      if ( ! this.saved ) {
+	  game(show) {
+	    if (show) {
+	      if (!this.saved) {
 	        presentIndex = 0; // Reset for new solution
 	        const solutionStepsArray = this.getNewOutput(solutionSteps);
 	        this.solutionStepsArray = solutionStepsArray;
-	        this.dom.buttons.next.style.pointerEvents = 'all';
-	        this.dom.buttons.next.style.opacity = '1';
-	        this.dom.buttons.prev.style.pointerEvents = 'none';
-	        this.dom.buttons.prev.style.opacity = '0.5';
+	        this.dom.buttons.next.style.pointerEvents = "all";
+	        this.dom.buttons.next.style.opacity = "1";
+	        this.dom.buttons.prev.style.pointerEvents = "none";
+	        this.dom.buttons.prev.style.opacity = "0.5";
 	        const totalSteps = this.solutionStepsArray.length;
-	        this.dom.texts.step.querySelector('span').textContent = `(0/${totalSteps}) Prev: - | Current: Start | Next: ${this.solutionStepsArray[0] || '-'}`;
+	        this.dom.texts.step.querySelector(
+	          "span"
+	        ).textContent = `(0/${totalSteps}) Prev: - | Current: Start | Next: ${
+          this.solutionStepsArray[0] || "-"
+        }`;
 	        scramble = this._getScrambleFromSolution(solutionSteps);
-	        // .split(' ');
-	        // const scramble = "B' D'"
-	        this.scramble=scramble;
-	        // const presentStep = scramble[presentIndex];
+	        this.scramble = scramble;
 	        this.scrambler.scramble(scramble);
 	        this.controls.scrambleCube();
-	        console.log("steps",scramble);
-	        // this.newGame = true;
-
-	        // setTimeout(() => {
-	        // // const sol = "D B" 
-	        // // solutionSteps
-	        // this.scrambler.scramble(solutionSteps);
-	        // this.controls.scrambleCube();
-	        // this.newGame = true;
-	        // }, 15000);
 	        this.nextButtonEvent();
 	        this.prevButtonEvent();
-	        // D L2 F L D L D' L' F' L D2 L' D2 L2 D L' D L D' L' D L D2 L' F D F' D' R' D' R D F' D F D' F' D F D' R D R' F' D F D2 B D' B' R D' R' D' U L F U' L2 D' U' L' U B D'
 	      }
 
-	      const duration = this.saved ? 0 :
-	        this.scrambler.converted.length * ( this.controls.flipSpeeds[0] + 10 );
+	      const duration = this.saved
+	        ? 0
+	        : this.scrambler.converted.length * (this.controls.flipSpeeds[0] + 10);
 
 	      this.state = STATE.Playing;
 	      this.saved = true;
 
-	      this.transition.buttons( BUTTONS.None, BUTTONS.Menu );
+	      this.transition.buttons(BUTTONS.None, BUTTONS.Menu);
 
-	      this.transition.zoom( STATE.Playing, duration );
-	      this.transition.title( HIDE );
+	      this.transition.zoom(STATE.Playing, duration);
+	      this.transition.title(HIDE);
 	      this.dom.texts.step.style.opacity = 1;
-	      // this.nextButtonEvent();
 
-	      setTimeout( () => {
-
-	        this.transition.timer( SHOW );        
-	        // this.nextButtonEvent();
-
-
-	      }, this.transition.durations.zoom - 1000 );
-
-	      setTimeout( () => {
-
+	      setTimeout(() => {
 	        this.controls.enable();
-	        // if ( ! this.newGame ) this.timer.start( true )
-
-	      }, this.transition.durations.zoom );
-
+	      }, this.transition.durations.zoom);
 	    } else {
-
 	      this.state = STATE.Menu;
 
-	      this.transition.buttons( BUTTONS.Menu, BUTTONS.Playing );
+	      this.transition.buttons(BUTTONS.Menu, BUTTONS.Playing);
 
-	      this.transition.zoom( STATE.Menu, 0 );
+	      this.transition.zoom(STATE.Menu, 0);
 
 	      this.controls.disable();
-	      if ( ! this.newGame ) this.timer.stop();
-	      this.transition.timer( HIDE );
 	      this.dom.texts.step.style.opacity = 0;
-	      this.dom.texts.step.querySelector('span').textContent = '';
+	      this.dom.texts.step.querySelector("span").textContent = "";
 
-	      setTimeout( () => this.transition.title( SHOW ), this.transition.durations.zoom - 1000 );
+	      setTimeout(
+	        () => this.transition.title(SHOW),
+	        this.transition.durations.zoom - 1000
+	      );
 
 	      this.playing = false;
 	      this.controls.disable();
-
 	    }
-
 	  }
 
-	  prefs( show ) {
-
-	    if ( show ) {
-
-	      if ( this.transition.activeTransitions > 0 ) return;
+	  prefs(show) {
+	    if (show) {
+	      if (this.transition.activeTransitions > 0) return;
 
 	      this.state = STATE.Prefs;
 
-	      this.transition.buttons( BUTTONS.Prefs, BUTTONS.Menu );
+	      this.transition.buttons(BUTTONS.Prefs, BUTTONS.Menu);
 
-	      this.transition.title( HIDE );
-	      this.transition.cube( HIDE );
+	      this.transition.title(HIDE);
+	      this.transition.cube(HIDE);
 
-	      setTimeout( () => this.transition.preferences( SHOW ), 1000 );
-
+	      setTimeout(() => this.transition.preferences(SHOW), 1000);
 	    } else {
-
 	      this.cube.resize();
 
 	      this.state = STATE.Menu;
 
-	      this.transition.buttons( BUTTONS.Menu, BUTTONS.Prefs );
+	      this.transition.buttons(BUTTONS.Menu, BUTTONS.Prefs);
 
-	      this.transition.preferences( HIDE );
+	      this.transition.preferences(HIDE);
 
-	      setTimeout( () => this.transition.cube( SHOW ), 500 );
-	      setTimeout( () => this.transition.title( SHOW ), 1200 );
-
+	      setTimeout(() => this.transition.cube(SHOW), 500);
+	      setTimeout(() => this.transition.title(SHOW), 1200);
 	    }
-
 	  }
 
-	  theme( show ) {
+	  theme(show) {
+	    this.themeEditor.colorPicker(show);
 
-	    this.themeEditor.colorPicker( show );
-	    
-	    if ( show ) {
+	    if (show) {
+	      if (this.transition.activeTransitions > 0) return;
 
-	      if ( this.transition.activeTransitions > 0 ) return;
+	      this.cube.loadFromData(States["3"]["checkerboard"]);
 
-	      this.cube.loadFromData( States[ '3' ][ 'checkerboard' ] );
-
-	      this.themeEditor.setHSL( null, false );
+	      this.themeEditor.setHSL(null, false);
 
 	      this.state = STATE.Theme;
 
-	      this.transition.buttons( BUTTONS.Theme, BUTTONS.Prefs );
+	      this.transition.buttons(BUTTONS.Theme, BUTTONS.Prefs);
 
-	      this.transition.preferences( HIDE );
+	      this.transition.preferences(HIDE);
 
-	      setTimeout( () => this.transition.cube( SHOW, true ), 500 );
-	      setTimeout( () => this.transition.theming( SHOW ), 1000 );
-
+	      setTimeout(() => this.transition.cube(SHOW, true), 500);
+	      setTimeout(() => this.transition.theming(SHOW), 1000);
 	    } else {
-
 	      this.state = STATE.Prefs;
 
-	      this.transition.buttons( BUTTONS.Prefs, BUTTONS.Theme );
+	      this.transition.buttons(BUTTONS.Prefs, BUTTONS.Theme);
 
-	      this.transition.cube( HIDE, true );
-	      this.transition.theming( HIDE );
+	      this.transition.cube(HIDE, true);
+	      this.transition.theming(HIDE);
 
-	      setTimeout( () => this.transition.preferences( SHOW ), 1000 );
-	      setTimeout( () => {
+	      setTimeout(() => this.transition.preferences(SHOW), 1000);
+	      setTimeout(() => {
+	        const gameCubeData = JSON.parse(
+	          localStorage.getItem("theCube_savedState")
+	        );
 
-	        const gameCubeData = JSON.parse( localStorage.getItem( 'theCube_savedState' ) );
-
-	        if ( !gameCubeData ) {
-
-	          this.cube.resize( true );
+	        if (!gameCubeData) {
+	          this.cube.resize(true);
 	          return;
-
 	        }
 
-	        this.cube.loadFromData( gameCubeData );
-
-	      }, 1500 );
-
+	        this.cube.loadFromData(gameCubeData);
+	      }, 1500);
 	    }
-
 	  }
 
-	  stats( show ) {
-
-	    if ( show ) {
-
-	      if ( this.transition.activeTransitions > 0 ) return;
+	  stats(show) {
+	    if (show) {
+	      if (this.transition.activeTransitions > 0) return;
 
 	      this.state = STATE.Stats;
 
-	      this.transition.buttons( BUTTONS.Stats, BUTTONS.Menu );
+	      this.transition.buttons(BUTTONS.Stats, BUTTONS.Menu);
 
-	      this.transition.title( HIDE );
-	      this.transition.cube( HIDE );
+	      this.transition.title(HIDE);
+	      this.transition.cube(HIDE);
 
-	      setTimeout( () => this.transition.stats( SHOW ), 1000 );
-
+	      setTimeout(() => this.transition.stats(SHOW), 1000);
 	    } else {
-
 	      this.state = STATE.Menu;
 
-	      this.transition.buttons( BUTTONS.Menu, BUTTONS.None );
+	      this.transition.buttons(BUTTONS.Menu, BUTTONS.None);
 
-	      this.transition.stats( HIDE );
+	      this.transition.stats(HIDE);
 
-	      setTimeout( () => this.transition.cube( SHOW ), 500 );
-	      setTimeout( () => this.transition.title( SHOW ), 1200 );
-
+	      setTimeout(() => this.transition.cube(SHOW), 500);
+	      setTimeout(() => this.transition.title(SHOW), 1200);
 	    }
-
 	  }
 
-	  complete( show ) {
-
+	  complete(show) {
 	    if (this.completeTimeout) {
 	      clearTimeout(this.completeTimeout);
 	      this.completeTimeout = null;
 	    }
 
-	    if ( show ) {
-
-	      this.transition.buttons( BUTTONS.Complete, BUTTONS.Playing );
+	    if (show) {
+	      this.transition.buttons(BUTTONS.Complete, BUTTONS.Playing);
 
 	      this.state = STATE.Complete;
 	      this.saved = false;
 
 	      this.controls.disable();
-	      // this.timer.stop();
 	      this.storage.clearGame();
+	      this.transition.zoom(STATE.Menu, 0);
+	      this.transition.elevate(SHOW);
 
-	      // this.bestTime = this.scores.addScore( this.timer.deltaTime );
-
-	      this.transition.zoom( STATE.Menu, 0 );
-	      this.transition.elevate( SHOW );
-
-	      setTimeout( () => {
-
-	        this.transition.complete( SHOW, this.bestTime );
+	      setTimeout(() => {
+	        this.transition.complete(SHOW, this.bestTime);
 	        this.confetti.start();
 
 	        this.completeTimeout = setTimeout(() => {
-	          this.complete( HIDE );
+	          this.complete(HIDE);
 	        }, 4000);
-
-	      }, 1000 );
-
+	      }, 1000);
 	    } else {
-
 	      this.state = STATE.Menu;
 	      this.saved = false;
+	      this.transition.complete(HIDE, this.bestTime);
+	      this.transition.cube(HIDE);
 
-	      // this.transition.timer( HIDE );
-	      this.transition.complete( HIDE, this.bestTime );
-	      this.transition.cube( HIDE );
-	      // this.timer.reset();
-
-	      setTimeout( () => {
+	      setTimeout(() => {
 	        this.cube.reset();
 	        this.confetti.stop();
-	        this.transition.elevate( HIDE );
-	        this.transition.buttons( BUTTONS.Menu, BUTTONS.Complete );
-	        this.transition.cube( SHOW );
-	        this.transition.title( SHOW );
-	      }, 1000 );
+	        this.transition.elevate(HIDE);
+	        this.transition.buttons(BUTTONS.Menu, BUTTONS.Complete);
+	        this.transition.cube(SHOW);
+	        this.transition.title(SHOW);
+	      }, 1000);
 
 	      return false;
-
 	    }
-
 	  }
-
 	}
 
 	window.game = new Game();

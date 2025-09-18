@@ -73,7 +73,6 @@ class Cube {
 			this.init();
 
 			this.game.saved = false;
-			this.game.timer.reset();
 			this.game.storage.clearGame();
 
 		}
