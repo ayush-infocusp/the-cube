@@ -29,7 +29,6 @@ class Transition {
     this.tweens.complete = [];
     this.tweens.prefs = [];
     this.tweens.theme = [];
-    this.tweens.stats = [];
   }
 
   buttons(show, hide) {
@@ -197,43 +196,6 @@ class Transition {
     const duration = this.durations[best ? "best" : "complete"];
 
     setTimeout(() => this.activeTransitions--, duration);
-  }
-
-  stats(show) {
-    if (show) this.game.scores.calcStats();
-
-    this.activeTransitions++;
-
-    this.tweens.stats.forEach((tween) => {
-      tween.stop();
-      tween = null;
-    });
-
-    let tweenId = -1;
-
-    const stats = this.game.dom.stats.querySelectorAll(".stats");
-    const easing = show ? Easing.Power.Out(2) : Easing.Power.In(3);
-
-    stats.forEach((stat, index) => {
-      const delay = index * (show ? 80 : 60);
-
-      this.tweens.stats[tweenId++] = new Tween({
-        delay: delay,
-        duration: 400,
-        easing: easing,
-        onUpdate: (tween) => {
-          const translate = show ? (1 - tween.value) * 2 : tween.value;
-          const opacity = show ? tween.value : 1 - tween.value;
-
-          stat.style.transform = `translate3d(0, ${translate}em, 0)`;
-          stat.style.opacity = opacity;
-        },
-      });
-    });
-
-    this.durations.stats = 0;
-
-    setTimeout(() => this.activeTransitions--, this.durations.stats);
   }
 
   preferences(show) {

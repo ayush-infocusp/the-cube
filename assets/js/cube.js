@@ -1,92 +1,73 @@
 (function () {
 	'use strict';
 
-	const animationEngine = ( () => {
-
+	const animationEngine = (() => {
 	  let uniqueID = 0;
 
 	  class AnimationEngine {
-
 	    constructor() {
-
 	      this.ids = [];
 	      this.animations = {};
-	      this.update = this.update.bind( this );
+	      this.update = this.update.bind(this);
 	      this.raf = 0;
 	      this.time = 0;
-
 	    }
 
 	    update() {
-
 	      const now = performance.now();
 	      const delta = now - this.time;
 	      this.time = now;
 
 	      let i = this.ids.length;
 
-	      this.raf = i ? requestAnimationFrame( this.update ) : 0;
+	      this.raf = i ? requestAnimationFrame(this.update) : 0;
 
-	      while ( i-- )
-	        this.animations[ this.ids[ i ] ] && this.animations[ this.ids[ i ] ].update( delta );
-
+	      while (i--)
+	        this.animations[this.ids[i]] &&
+	          this.animations[this.ids[i]].update(delta);
 	    }
 
-	    add( animation ) {
+	    add(animation) {
+	      animation.id = uniqueID++;
 
-	      animation.id = uniqueID ++;
+	      this.ids.push(animation.id);
+	      this.animations[animation.id] = animation;
 
-	      this.ids.push( animation.id );
-	      this.animations[ animation.id ] = animation;
-
-	      if ( this.raf !== 0 ) return;
+	      if (this.raf !== 0) return;
 
 	      this.time = performance.now();
-	      this.raf = requestAnimationFrame( this.update );
-
+	      this.raf = requestAnimationFrame(this.update);
 	    }
 
-	    remove( animation ) {
+	    remove(animation) {
+	      const index = this.ids.indexOf(animation.id);
 
-	      const index = this.ids.indexOf( animation.id );
+	      if (index < 0) return;
 
-	      if ( index < 0 ) return;
-
-	      this.ids.splice( index, 1 );
-	      delete this.animations[ animation.id ];
+	      this.ids.splice(index, 1);
+	      delete this.animations[animation.id];
 	      animation = null;
-
 	    }
-
 	  }
 
 	  return new AnimationEngine();
-
-	} )();
+	})();
 
 	class Animation {
-
-	  constructor( start ) {
-
-	    console.log("hello1",start);
-	    if ( start === true ) this.start();
-
+	  constructor(start) {
+	    console.log("hello1", start);
+	    if (start === true) this.start();
 	  }
 
 	  start() {
-
-	    animationEngine.add( this );
-
+	    animationEngine.add(this);
 	  }
 
 	  stop() {
-
-	    animationEngine.remove( this );
-
+	    animationEngine.remove(this);
 	  }
 
-	  update( delta ) {}
-
+	  update(delta) {}
 	}
 
 	class World extends Animation {
@@ -1083,13 +1064,17 @@
 
 	}
 
-	window.addEventListener( 'touchmove', () => {} );
-	document.addEventListener( 'touchmove',  event => { event.preventDefault(); }, { passive: false } );
+	window.addEventListener("touchmove", () => {});
+	document.addEventListener(
+	  "touchmove",
+	  (event) => {
+	    event.preventDefault();
+	  },
+	  { passive: false }
+	);
 
 	class Draggable {
-
-	  constructor( element, options ) {
-
+	  constructor(element, options) {
 	    this.position = {
 	      current: new THREE.Vector2(),
 	      start: new THREE.Vector2(),
@@ -1098,71 +1083,80 @@
 	      drag: new THREE.Vector2(),
 	    };
 
-	    this.options = Object.assign( {
-	      calcDelta: false,
-	    }, options || {} );
+	    this.options = Object.assign(
+	      {
+	        calcDelta: false,
+	      },
+	      options || {}
+	    );
 
 	    this.element = element;
 	    this.touch = null;
 
 	    this.drag = {
+	      start: (event) => {
+	        if (event.type == "mousedown" && event.which != 1) return;
+	        if (event.type == "touchstart" && event.touches.length > 1) return;
 
-	      start: ( event ) => {
+	        this.getPositionCurrent(event);
 
-	        if ( event.type == 'mousedown' && event.which != 1 ) return;
-	        if ( event.type == 'touchstart' && event.touches.length > 1 ) return;
-
-	        this.getPositionCurrent( event );
-
-	        if ( this.options.calcDelta ) {
-
+	        if (this.options.calcDelta) {
 	          this.position.start = this.position.current.clone();
-	          this.position.delta.set( 0, 0 );
-	          this.position.drag.set( 0, 0 );
-
+	          this.position.delta.set(0, 0);
+	          this.position.drag.set(0, 0);
 	        }
 
-	        this.touch = ( event.type == 'touchstart' );
+	        this.touch = event.type == "touchstart";
 
-	        this.onDragStart( this.position );
+	        this.onDragStart(this.position);
 
-	        window.addEventListener( ( this.touch ) ? 'touchmove' : 'mousemove', this.drag.move, false );
-	        window.addEventListener( ( this.touch ) ? 'touchend' : 'mouseup', this.drag.end, false );
-
+	        window.addEventListener(
+	          this.touch ? "touchmove" : "mousemove",
+	          this.drag.move,
+	          false
+	        );
+	        window.addEventListener(
+	          this.touch ? "touchend" : "mouseup",
+	          this.drag.end,
+	          false
+	        );
 	      },
 
-	      move: ( event ) => {
-
-	        if ( this.options.calcDelta ) {
-
+	      move: (event) => {
+	        if (this.options.calcDelta) {
 	          this.position.old = this.position.current.clone();
-
 	        }
 
-	        this.getPositionCurrent( event );
+	        this.getPositionCurrent(event);
 
-	        if ( this.options.calcDelta ) {
-
-	          this.position.delta = this.position.current.clone().sub( this.position.old );
-	          this.position.drag = this.position.current.clone().sub( this.position.start );
-
+	        if (this.options.calcDelta) {
+	          this.position.delta = this.position.current
+	            .clone()
+	            .sub(this.position.old);
+	          this.position.drag = this.position.current
+	            .clone()
+	            .sub(this.position.start);
 	        }
 
-	        this.onDragMove( this.position );
-
+	        this.onDragMove(this.position);
 	      },
 
-	      end: ( event ) => {
+	      end: (event) => {
+	        this.getPositionCurrent(event);
 
-	        this.getPositionCurrent( event );
+	        this.onDragEnd(this.position);
 
-	        this.onDragEnd( this.position );
-
-	        window.removeEventListener( ( this.touch ) ? 'touchmove' : 'mousemove', this.drag.move, false );
-	        window.removeEventListener( ( this.touch ) ? 'touchend' : 'mouseup', this.drag.end, false );
-
+	        window.removeEventListener(
+	          this.touch ? "touchmove" : "mousemove",
+	          this.drag.move,
+	          false
+	        );
+	        window.removeEventListener(
+	          this.touch ? "touchend" : "mouseup",
+	          this.drag.end,
+	          false
+	        );
 	      },
-
 	    };
 
 	    this.onDragStart = () => {};
@@ -1172,46 +1166,36 @@
 	    this.enable();
 
 	    return this;
-
 	  }
 
 	  enable() {
-
-	    this.element.addEventListener( 'touchstart', this.drag.start, false );
-	    this.element.addEventListener( 'mousedown', this.drag.start, false );
+	    this.element.addEventListener("touchstart", this.drag.start, false);
+	    this.element.addEventListener("mousedown", this.drag.start, false);
 
 	    return this;
-
 	  }
 
 	  disable() {
-
-	    this.element.removeEventListener( 'touchstart', this.drag.start, false );
-	    this.element.removeEventListener( 'mousedown', this.drag.start, false );
+	    this.element.removeEventListener("touchstart", this.drag.start, false);
+	    this.element.removeEventListener("mousedown", this.drag.start, false);
 
 	    return this;
-
 	  }
 
-	  getPositionCurrent( event ) {
-
+	  getPositionCurrent(event) {
 	    const dragEvent = event.touches
-	      ? ( event.touches[ 0 ] || event.changedTouches[ 0 ] )
+	      ? event.touches[0] || event.changedTouches[0]
 	      : event;
 
-	    this.position.current.set( dragEvent.pageX, dragEvent.pageY );
-
+	    this.position.current.set(dragEvent.pageX, dragEvent.pageY);
 	  }
 
-	  convertPosition( position ) {
-
-	    position.x = ( position.x / this.element.offsetWidth ) * 2 - 1;
-	    position.y = - ( ( position.y / this.element.offsetHeight ) * 2 - 1 );
+	  convertPosition(position) {
+	    position.x = (position.x / this.element.offsetWidth) * 2 - 1;
+	    position.y = -((position.y / this.element.offsetHeight) * 2 - 1);
 
 	    return position;
-
 	  }
-
 	}
 
 	const STILL = 0;
@@ -1847,7 +1831,6 @@
 	    this.tweens.complete = [];
 	    this.tweens.prefs = [];
 	    this.tweens.theme = [];
-	    this.tweens.stats = [];
 	  }
 
 	  buttons(show, hide) {
@@ -2015,43 +1998,6 @@
 	    const duration = this.durations[best ? "best" : "complete"];
 
 	    setTimeout(() => this.activeTransitions--, duration);
-	  }
-
-	  stats(show) {
-	    if (show) this.game.scores.calcStats();
-
-	    this.activeTransitions++;
-
-	    this.tweens.stats.forEach((tween) => {
-	      tween.stop();
-	      tween = null;
-	    });
-
-	    let tweenId = -1;
-
-	    const stats = this.game.dom.stats.querySelectorAll(".stats");
-	    const easing = show ? Easing.Power.Out(2) : Easing.Power.In(3);
-
-	    stats.forEach((stat, index) => {
-	      const delay = index * (show ? 80 : 60);
-
-	      this.tweens.stats[tweenId++] = new Tween({
-	        delay: delay,
-	        duration: 400,
-	        easing: easing,
-	        onUpdate: (tween) => {
-	          const translate = show ? (1 - tween.value) * 2 : tween.value;
-	          const opacity = show ? tween.value : 1 - tween.value;
-
-	          stat.style.transform = `translate3d(0, ${translate}em, 0)`;
-	          stat.style.opacity = opacity;
-	        },
-	      });
-	    });
-
-	    this.durations.stats = 0;
-
-	    setTimeout(() => this.activeTransitions--, this.durations.stats);
 	  }
 
 	  preferences(show) {
@@ -2728,113 +2674,6 @@
 
 	}
 
-	class Scores {
-
-	  constructor( game ) {
-
-	    this.game = game;
-
-	    this.data = {
-	      2: {
-	        scores: [],
-	        solves: 0,
-	        best: 0,
-	        worst: 0,
-	      },
-	      3: {
-	        scores: [],
-	        solves: 0,
-	        best: 0,
-	        worst: 0,
-	      },
-	      4: {
-	        scores: [],
-	        solves: 0,
-	        best: 0,
-	        worst: 0,
-	      },
-	      5: {
-	        scores: [],
-	        solves: 0,
-	        best: 0,
-	        worst: 0,
-	      }
-	    };
-
-	  }
-
-	  addScore( time ) {
-
-	    const data = this.data[ this.game.cube.sizeGenerated ];
-
-	    data.scores.push( time );
-	    data.solves++;
-
-	    if ( data.scores.lenght > 100 ) data.scores.shift();
-
-	    let bestTime = false;    
-
-	    if ( time < data.best || data.best === 0 ) {
-
-	      data.best = time;
-	      bestTime = true;
-
-	    }
-
-	    if ( time > data.worst ) data.worst = time;
-
-	    this.game.storage.saveScores();
-
-	    return bestTime;
-
-	  }
-
-	  calcStats() {
-
-	    const s = this.game.cube.sizeGenerated;
-	    const data = this.data[ s ];
-
-	    this.setStat( 'cube-size', `${s}<i>x</i>${s}<i>x</i>${s}` );
-	    this.setStat( 'total-solves', data.solves );
-	    this.setStat( 'best-time', this.convertTime( data.best ) );
-	    this.setStat( 'worst-time', this.convertTime( data.worst ) );
-	    this.setStat( 'average-5', this.getAverage( 5 ) );
-	    this.setStat( 'average-12', this.getAverage( 12 ) );
-	    this.setStat( 'average-25', this.getAverage( 25 ) );
-
-	  }
-
-	  setStat( name, value ) {
-
-	    if ( value === 0 ) value = '-';
-
-	    this.game.dom.stats.querySelector( `.stats[name="${name}"] b` ).innerHTML = value;
-
-	  }
-
-	  getAverage( count ) {
-
-	    const data = this.data[ this.game.cube.sizeGenerated ];
-
-	    if ( data.scores.length < count ) return 0;
-
-	    return this.convertTime( data.scores.slice( -count ).reduce( ( a, b ) => a + b, 0 ) / count );
-
-	  }
-
-	  convertTime( time ) {
-
-	    if ( time <= 0 ) return 0;
-
-	    const seconds = parseInt( ( time / 1000 ) % 60 );
-	    const minutes = parseInt( ( time / ( 1000 * 60 ) ) );
-
-	    return minutes + ':' + ( seconds < 10 ? '0' : '' ) + seconds;
-
-	  }
-
-	}
-
 	class Storage {
 	  constructor(game) {
 	    this.game = game;
@@ -2844,13 +2683,11 @@
 	    if (!userVersion || userVersion !== window.gameVersion) {
 	      this.clearGame();
 	      this.clearPreferences();
-	      this.migrateScores();
 	    }
 	  }
 
 	  init() {
 	    this.loadPreferences();
-	    this.loadScores();
 	  }
 
 	  loadGame() {
@@ -2865,22 +2702,6 @@
 	    localStorage.removeItem("theCube_playing");
 	    localStorage.removeItem("theCube_savedState");
 	    localStorage.removeItem("theCube_time");
-	  }
-
-	  loadScores() {
-	    return;
-	  }
-
-	  saveScores() {
-	    return;
-	  }
-
-	  clearScores() {
-	    return;
-	  }
-
-	  migrateScores() {
-	    return;
 	  }
 
 	  loadPreferences() {
@@ -7623,16 +7444,15 @@
 	  Menu: 0,
 	  Playing: 1,
 	  Complete: 2,
-	  Stats: 3,
+
 	  Prefs: 4,
 	  Theme: 5,
 	};
 
 	const BUTTONS = {
-	  Menu: ["stats", "prefs"],
+	  Menu: ["prefs"],
 	  Playing: ["back"],
 	  Complete: [],
-	  Stats: [],
 	  Prefs: ["back", "theme"],
 	  Theme: ["back", "reset"],
 	  None: [],
@@ -7949,7 +7769,6 @@
 	      back: document.querySelector(".ui__background"),
 	      prefs: document.querySelector(".ui__prefs"),
 	      theme: document.querySelector(".ui__theme"),
-	      stats: document.querySelector(".ui__stats"),
 	      texts: {
 	        title: document.querySelector(".text--title"),
 	        note: document.querySelector(".text--note"),
@@ -7961,7 +7780,6 @@
 	      buttons: {
 	        prefs: document.querySelector(".btn--prefs"),
 	        back: document.querySelector(".btn--back"),
-	        stats: document.querySelector(".btn--stats"),
 	        reset: document.querySelector(".btn--reset"),
 	        theme: document.querySelector(".btn--theme"),
 	        next: document.querySelector(".btn--next"),
@@ -7975,7 +7793,6 @@
 	    this.scrambler = new Scrambler(this);
 	    this.transition = new Transition(this);
 	    this.preferences = new Preferences(this);
-	    this.scores = new Scores(this);
 	    this.storage = new Storage(this);
 	    this.confetti = new Confetti(this);
 	    this.themes = new Themes(this);
@@ -7993,7 +7810,6 @@
 	    this.transition.init();
 
 	    this.storage.loadGame();
-	    this.scores.calcStats();
 
 	    setTimeout(() => {
 	      this.transition.float();
@@ -8026,8 +7842,6 @@
 	          this.game(SHOW);
 	        } else if (this.state === STATE.Complete) {
 	          this.complete(HIDE);
-	        } else if (this.state === STATE.Stats) {
-	          this.stats(HIDE);
 	        }
 	      },
 	      false
@@ -8060,8 +7874,6 @@
 	    this.dom.buttons.prefs.onclick = (event) => this.prefs(SHOW);
 
 	    this.dom.buttons.theme.onclick = (event) => this.theme(SHOW);
-
-	    this.dom.buttons.stats.onclick = (event) => this.stats(SHOW);
 
 	    this.controls.onSolved = () => this.complete(SHOW);
 	  }
@@ -8310,30 +8122,6 @@
 
 	        this.cube.loadFromData(gameCubeData);
 	      }, 1500);
-	    }
-	  }
-
-	  stats(show) {
-	    if (show) {
-	      if (this.transition.activeTransitions > 0) return;
-
-	      this.state = STATE.Stats;
-
-	      this.transition.buttons(BUTTONS.Stats, BUTTONS.Menu);
-
-	      this.transition.title(HIDE);
-	      this.transition.cube(HIDE);
-
-	      setTimeout(() => this.transition.stats(SHOW), 1000);
-	    } else {
-	      this.state = STATE.Menu;
-
-	      this.transition.buttons(BUTTONS.Menu, BUTTONS.None);
-
-	      this.transition.stats(HIDE);
-
-	      setTimeout(() => this.transition.cube(SHOW), 500);
-	      setTimeout(() => this.transition.title(SHOW), 1200);
 	    }
 	  }
 

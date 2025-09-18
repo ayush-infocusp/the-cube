@@ -207,37 +207,7 @@ body {
     background: linear-gradient(to right, #000, currentColor, #fff)
 }
 
-.stats {
-    position: relative;
-    width: 14em;
-    z-index: 1;
-    display: flex;
-    justify-content: space-between;
-    opacity: 0
-}
 
-.stats:not(:last-child) {
-    margin-bottom: 1.5em
-}
-
-.stats>i {
-    display: block;
-    color: rgba(0, 0, 0, 0.5);
-    font-size: 0.9em
-}
-
-.stats>b {
-    display: block;
-    font-size: 0.9em
-}
-
-.stats>b>i {
-    font-size: 0.75em
-}
-
-.stats[name="worst-time"] {
-    display: none
-}
 
 .text {
     position: absolute;
@@ -354,7 +324,6 @@ body {
 .ui__texts,
 .ui__prefs,
 .ui__theme,
-.ui__stats,
 .ui__buttons {
     position: absolute;
     top: 0;
@@ -396,7 +365,6 @@ body {
 }
 
 .ui__prefs,
-.ui__stats,
 .ui__theme {
     display: flex;
     flex-flow: column nowrap;

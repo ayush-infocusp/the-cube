@@ -5,7 +5,6 @@ import { Scrambler } from "./Scrambler.js";
 import { Transition } from "./Transition.js";
 import { Preferences } from "./Preferences.js";
 import { Confetti } from "./Confetti.js";
-import { Scores } from "./Scores.js";
 import { Storage } from "./Storage.js";
 import { Themes } from "./Themes.js";
 import { ThemeEditor } from "./ThemeEditor.js";
@@ -16,16 +15,15 @@ const STATE = {
   Menu: 0,
   Playing: 1,
   Complete: 2,
-  Stats: 3,
+
   Prefs: 4,
   Theme: 5,
 };
 
 const BUTTONS = {
-  Menu: ["stats", "prefs"],
+  Menu: ["prefs"],
   Playing: ["back"],
   Complete: [],
-  Stats: [],
   Prefs: ["back", "theme"],
   Theme: ["back", "reset"],
   None: [],
@@ -348,7 +346,6 @@ class Game {
       back: document.querySelector(".ui__background"),
       prefs: document.querySelector(".ui__prefs"),
       theme: document.querySelector(".ui__theme"),
-      stats: document.querySelector(".ui__stats"),
       texts: {
         title: document.querySelector(".text--title"),
         note: document.querySelector(".text--note"),
@@ -360,7 +357,6 @@ class Game {
       buttons: {
         prefs: document.querySelector(".btn--prefs"),
         back: document.querySelector(".btn--back"),
-        stats: document.querySelector(".btn--stats"),
         reset: document.querySelector(".btn--reset"),
         theme: document.querySelector(".btn--theme"),
         next: document.querySelector(".btn--next"),
@@ -374,7 +370,6 @@ class Game {
     this.scrambler = new Scrambler(this);
     this.transition = new Transition(this);
     this.preferences = new Preferences(this);
-    this.scores = new Scores(this);
     this.storage = new Storage(this);
     this.confetti = new Confetti(this);
     this.themes = new Themes(this);
@@ -392,7 +387,6 @@ class Game {
     this.transition.init();
 
     this.storage.loadGame();
-    this.scores.calcStats();
 
     setTimeout(() => {
       this.transition.float();
@@ -425,8 +419,6 @@ class Game {
           this.game(SHOW);
         } else if (this.state === STATE.Complete) {
           this.complete(HIDE);
-        } else if (this.state === STATE.Stats) {
-          this.stats(HIDE);
         }
       },
       false
@@ -459,8 +451,6 @@ class Game {
     this.dom.buttons.prefs.onclick = (event) => this.prefs(SHOW);
 
     this.dom.buttons.theme.onclick = (event) => this.theme(SHOW);
-
-    this.dom.buttons.stats.onclick = (event) => this.stats(SHOW);
 
     this.controls.onSolved = () => this.complete(SHOW);
   }
@@ -709,30 +699,6 @@ class Game {
 
         this.cube.loadFromData(gameCubeData);
       }, 1500);
-    }
-  }
-
-  stats(show) {
-    if (show) {
-      if (this.transition.activeTransitions > 0) return;
-
-      this.state = STATE.Stats;
-
-      this.transition.buttons(BUTTONS.Stats, BUTTONS.Menu);
-
-      this.transition.title(HIDE);
-      this.transition.cube(HIDE);
-
-      setTimeout(() => this.transition.stats(SHOW), 1000);
-    } else {
-      this.state = STATE.Menu;
-
-      this.transition.buttons(BUTTONS.Menu, BUTTONS.None);
-
-      this.transition.stats(HIDE);
-
-      setTimeout(() => this.transition.cube(SHOW), 500);
-      setTimeout(() => this.transition.title(SHOW), 1200);
     }
   }
 

@@ -7,13 +7,11 @@ class Storage {
     if (!userVersion || userVersion !== window.gameVersion) {
       this.clearGame();
       this.clearPreferences();
-      this.migrateScores();
     }
   }
 
   init() {
     this.loadPreferences();
-    this.loadScores();
   }
 
   loadGame() {
@@ -28,22 +26,6 @@ class Storage {
     localStorage.removeItem("theCube_playing");
     localStorage.removeItem("theCube_savedState");
     localStorage.removeItem("theCube_time");
-  }
-
-  loadScores() {
-    return;
-  }
-
-  saveScores() {
-    return;
-  }
-
-  clearScores() {
-    return;
-  }
-
-  migrateScores() {
-    return;
   }
 
   loadPreferences() {
