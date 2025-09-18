@@ -9,7 +9,7 @@ import { Storage } from "./Storage.js";
 import { Themes } from "./Themes.js";
 import { ThemeEditor } from "./ThemeEditor.js";
 import { States } from "./States.js";
-import solver from "rubiks-cube-solver";
+import solveCube from "./CubeSolver.js";
 
 const STATE = {
   Menu: 0,
@@ -188,7 +188,7 @@ class Game {
       });
 
       // The solver expects the faces in FRUDLB order.
-      const faceOrder = ["F", "R", "U", "D", "L", "B"];
+      const faceOrder = ["U", "R", "F", "D", "L", "B"];
 
       const data = faceOrder
         .map((faceLetter) =>
@@ -212,7 +212,7 @@ class Game {
     });
 
     // Print/validate cube state
-    printButton.addEventListener("click", () => {
+    printButton.addEventListener("click", async () => {
       output.style.display = "block";
       const allColors = Object.values(cubeState).flat();
       const usedColors = new Set(allColors);
@@ -248,15 +248,11 @@ class Game {
 
       const solverString = convertStateForSolver(cubeState);
 
-      const solution = solver(solverString.toLowerCase());
+      const solution = await solveCube(solverString);
 
       if (solution && typeof solution === "string") {
-        // The solver returns moves with 'prime' (e.g., "Rprime"),
-        // but the scrambler expects an apostrophe (e.g., "R'").
-        const scramblerFriendlySolution = solution.replace(/prime/g, "'");
-
-        solutionSteps = scramblerFriendlySolution;
-        output.textContent += `\nSolution: ${scramblerFriendlySolution}`;
+        solutionSteps = solution;
+        output.textContent += `\nSolution: ${solution}`;
 
         // Use the game's scrambler and controls to animate the solution.
         this.setup3DCube();
