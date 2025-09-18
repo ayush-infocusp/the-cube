@@ -52,7 +52,6 @@ const animationEngine = (() => {
 
 class Animation {
   constructor(start) {
-    console.log("hello1", start);
     if (start === true) this.start();
   }
 

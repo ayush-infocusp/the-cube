@@ -229,8 +229,7 @@ class Game {
     // Print/validate cube state
     printButton.addEventListener("click", () => {
       output.style.display = "block";
-      console.log("cubeState", cubeState);
-
+=
       const allColors = Object.values(cubeState).flat();
       const usedColors = new Set(allColors);
       usedColors.delete("#555");
@@ -264,17 +263,14 @@ class Game {
         `✅ Cube is valid!\n` + JSON.stringify(cubeState, null, 2);
 
       const solverString = convertStateForSolver(cubeState);
-      console.log("solverString", solverString);
 
       const solution = solver(solverString.toLowerCase());
-      console.log("solution", solution);
 
       if (solution && typeof solution === "string") {
         // The solver returns moves with 'prime' (e.g., "Rprime"),
         // but the scrambler expects an apostrophe (e.g., "R'").
         const scramblerFriendlySolution = solution.replace(/prime/g, "'");
 
-        console.log("Solution:", scramblerFriendlySolution);
         solutionSteps = scramblerFriendlySolution;
         output.textContent += `\nSolution: ${scramblerFriendlySolution}`;
 
@@ -287,16 +283,13 @@ class Game {
 
     // Initialize face with default face data
     cubeState[currentFace].forEach((color, i) => {
-      console.log("color", color, currentFace);
       cuboids[i].style.backgroundColor = color;
     });
 
     function createStrip(id) {
       const container = document.getElementById(id);
-      console.log("container", id);
       container.innerHTML = "";
       for (let i = 0; i < 9; i++) {
-        console.log("i", i);
         const tile = document.createElement("div");
         tile.style.width = "30px";
         tile.style.height = "30px";
@@ -308,14 +301,12 @@ class Game {
     }
 
     function updateSurroundingFaces() {
-      console.log("updateSurroundingFaces");
       const adj = adjacentFaces[currentFace];
 
       function updateStrip(stripId, faceKey) {
         const container = document.getElementById(stripId);
         const tiles = container.children;
         const colors = cubeState[faceKey];
-        console.log("colors", colors, faceKey, tiles);
 
         for (let i = 0; i < 9; i++) {
           tiles[i].style.backgroundColor = colors[i];
@@ -485,7 +476,6 @@ class Game {
         st = st + data;
         if (sol[index + 1] == `'` || sol[index + 1] == "2")
           st = st + sol[index + 1];
-        console.log("data", st, data);
         newData.push(st);
       }
     });
@@ -539,8 +529,7 @@ class Game {
 
     this.dom.buttons.prev.onclick = (event) => {
       if (presentIndex <= 0) {
-        console.log("Start of solution.");
-        // Optionally disable the button
+     
         this.dom.buttons.prev.style.pointerEvents = "none";
         this.dom.buttons.prev.style.opacity = "0.5";
         return;
