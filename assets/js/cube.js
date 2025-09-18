@@ -55,7 +55,6 @@
 
 	class Animation {
 	  constructor(start) {
-	    console.log("hello1", start);
 	    if (start === true) this.start();
 	  }
 
@@ -653,234 +652,208 @@
 	}
 
 	class Cube {
-
-		constructor( game ) {
-
-			this.game = game;
-			this.size = 3;
-
-			this.geometry = {
-				pieceCornerRadius: 0.12,
-				edgeCornerRoundness: 0.15,
-				edgeScale: 0.82,
-				edgeDepth: 0.01,
-			};
-
-			this.holder = new THREE.Object3D();
-			this.object = new THREE.Object3D();
-			this.animator = new THREE.Object3D();
-
-			this.holder.add( this.animator );
-			this.animator.add( this.object );
-
-			this.game.world.scene.add( this.holder );
-
-		}
-
-		init() {
-
-			this.cubes = [];
-			this.object.children = [];
-			this.object.add( this.game.controls.group );
-
-			if ( this.size === 2 ) this.scale = 1.25;
-			else if ( this.size === 3 ) this.scale = 1;
-			else if ( this.size > 3 ) this.scale = 3 / this.size;
-
-			this.object.scale.set( this.scale, this.scale, this.scale );
-
-			const controlsScale = this.size === 2 ? 0.825 : 1;
-			this.game.controls.edges.scale.set( controlsScale, controlsScale, controlsScale );
-			
-			this.generatePositions();
-			this.generateModel();
-
-			this.pieces.forEach( piece => {
-
-				this.cubes.push( piece.userData.cube );
-				this.object.add( piece );
-
-			} );
-
-			this.holder.traverse( node => {
-
-				if ( node.frustumCulled ) node.frustumCulled = false;
-
-			} );
-
-			this.updateColors( this.game.themes.getColors() );
-
-			this.sizeGenerated = this.size;
-
-		}
-
-		resize( force = false ) {
-
-			if ( this.size !== this.sizeGenerated || force ) {
-
-				this.size = this.game.preferences.ranges.size.value;
-
-				this.reset();
-				this.init();
-
-				this.game.saved = false;
-				this.game.storage.clearGame();
-
-			}
-
-		}
-
-		reset() {
-
-			this.game.controls.edges.rotation.set( 0, 0, 0 );
-
-			this.holder.rotation.set( 0, 0, 0 );
-			this.object.rotation.set( 0, 0, 0 );
-			this.animator.rotation.set( 0, 0, 0 );
-
-		}
-
-		generatePositions() {
-
-			const m = this.size - 1;
-			const first = this.size % 2 !== 0
-				? 0 - Math.floor(this.size / 2)
-				: 0.5 - this.size / 2;
-
-			let x, y, z;
-
-			this.positions = [];
-
-			for ( x = 0; x < this.size; x ++ ) {
-				for ( y = 0; y < this.size; y ++ ) {
-			  	for ( z = 0; z < this.size; z ++ ) {
-
-			  		let position = new THREE.Vector3(first + x, first + y, first + z);
-			  		let edges = [];
-
-			  		if ( x == 0 ) edges.push(0);
-			  		if ( x == m ) edges.push(1);
-			  		if ( y == 0 ) edges.push(2);
-			  		if ( y == m ) edges.push(3);
-			  		if ( z == 0 ) edges.push(4);
-			  		if ( z == m ) edges.push(5);
-
-			  		position.edges = edges;
-			  		this.positions.push( position );
-
-			  	}
-			  }
-			}
-
-		}
-
-		generateModel() {
-
-			this.pieces = [];
-			this.edges = [];
-
-			const pieceSize = 1 / 3;
-
-			const mainMaterial = new THREE.MeshLambertMaterial();
-
-			const pieceMesh = new THREE.Mesh(
-				new RoundedBoxGeometry( pieceSize, this.geometry.pieceCornerRadius, 3 ),
-				mainMaterial.clone()
-			);
-
-			const edgeGeometry = RoundedPlaneGeometry(
-				pieceSize,
-				this.geometry.edgeCornerRoundness,
-				this.geometry.edgeDepth
-			);
-
-			this.positions.forEach( ( position, index ) => {
-
-				const piece = new THREE.Object3D();
-				const pieceCube = pieceMesh.clone();
-				const pieceEdges = [];
-
-				piece.position.copy( position.clone().divideScalar( 3 ) );
-				piece.add( pieceCube );
-				piece.name = index;
-				piece.edgesName = '';
-
-				position.edges.forEach( position => {
-
-					const edge = new THREE.Mesh( edgeGeometry, mainMaterial.clone() );
-					const name = [ 'L', 'R', 'D', 'U', 'B', 'F' ][ position ];
-					const distance = pieceSize / 2;
-
-					edge.position.set(
-					  distance * [ -1, 1, 0, 0, 0, 0 ][ position ],
-					  distance * [ 0, 0, -1, 1, 0, 0 ][ position ],
-					  distance * [ 0, 0, 0, 0, -1, 1 ][ position ]
-					);
-
-					edge.rotation.set(
-					  Math.PI / 2 * [ 0, 0, 1, -1, 0, 0 ][ position ],
-					  Math.PI / 2 * [ -1, 1, 0, 0, 2, 0 ][ position ],
-				  	0
-					);
-
-					edge.scale.set(
-						this.geometry.edgeScale,
-						this.geometry.edgeScale,
-						this.geometry.edgeScale
-					);
-
-					edge.name = name;
-
-					piece.add( edge );
-					pieceEdges.push( name );
-					this.edges.push( edge );
-
-				} );
-
-				piece.userData.edges = pieceEdges;
-				piece.userData.cube = pieceCube;
-
-				piece.userData.start = {
-					position: piece.position.clone(),
-					rotation: piece.rotation.clone(),
-				};
-
-				this.pieces.push( piece );
-
-			} );
-
-		}
-
-		updateColors( colors ) {
-
-			if ( typeof this.pieces !== 'object' && typeof this.edges !== 'object' ) return;
-
-	    this.pieces.forEach( piece => piece.userData.cube.material.color.setHex( colors.P ) );
-	    this.edges.forEach( edge => edge.material.color.setHex( colors[ edge.name ] ) );
-
-		}
-
-		loadFromData( data ) {
-
-			this.size = data.size;
-
-			this.reset();
-			this.init();
-
-			this.pieces.forEach( piece => {
-
-	      const index = data.names.indexOf( piece.name );
+	  constructor(game) {
+	    this.game = game;
+	    this.size = 3;
+
+	    this.geometry = {
+	      pieceCornerRadius: 0.12,
+	      edgeCornerRoundness: 0.15,
+	      edgeScale: 0.82,
+	      edgeDepth: 0.01,
+	    };
+
+	    this.holder = new THREE.Object3D();
+	    this.object = new THREE.Object3D();
+	    this.animator = new THREE.Object3D();
+
+	    this.holder.add(this.animator);
+	    this.animator.add(this.object);
+
+	    this.game.world.scene.add(this.holder);
+	  }
+
+	  init() {
+	    this.cubes = [];
+	    this.object.children = [];
+	    this.object.add(this.game.controls.group);
+
+	    if (this.size === 2) this.scale = 1.25;
+	    else if (this.size === 3) this.scale = 1;
+	    else if (this.size > 3) this.scale = 3 / this.size;
+
+	    this.object.scale.set(this.scale, this.scale, this.scale);
+
+	    const controlsScale = this.size === 2 ? 0.825 : 1;
+	    this.game.controls.edges.scale.set(
+	      controlsScale,
+	      controlsScale,
+	      controlsScale
+	    );
+
+	    this.generatePositions();
+	    this.generateModel();
+
+	    this.pieces.forEach((piece) => {
+	      this.cubes.push(piece.userData.cube);
+	      this.object.add(piece);
+	    });
+
+	    this.holder.traverse((node) => {
+	      if (node.frustumCulled) node.frustumCulled = false;
+	    });
+
+	    this.updateColors(this.game.themes.getColors());
+
+	    this.sizeGenerated = this.size;
+	  }
+
+	  resize(force = false) {
+	    if (this.size !== this.sizeGenerated || force) {
+	      this.size = this.game.preferences.ranges.size.value;
+
+	      this.reset();
+	      this.init();
+
+	      this.game.saved = false;
+	      this.game.storage.clearGame();
+	    }
+	  }
+
+	  reset() {
+	    this.game.controls.edges.rotation.set(0, 0, 0);
+
+	    this.holder.rotation.set(0, 0, 0);
+	    this.object.rotation.set(0, 0, 0);
+	    this.animator.rotation.set(0, 0, 0);
+	  }
+
+	  generatePositions() {
+	    const m = this.size - 1;
+	    const first =
+	      this.size % 2 !== 0 ? 0 - Math.floor(this.size / 2) : 0.5 - this.size / 2;
+
+	    let x, y, z;
+
+	    this.positions = [];
+
+	    for (x = 0; x < this.size; x++) {
+	      for (y = 0; y < this.size; y++) {
+	        for (z = 0; z < this.size; z++) {
+	          let position = new THREE.Vector3(first + x, first + y, first + z);
+	          let edges = [];
+
+	          if (x == 0) edges.push(0);
+	          if (x == m) edges.push(1);
+	          if (y == 0) edges.push(2);
+	          if (y == m) edges.push(3);
+	          if (z == 0) edges.push(4);
+	          if (z == m) edges.push(5);
+
+	          position.edges = edges;
+	          this.positions.push(position);
+	        }
+	      }
+	    }
+	  }
+
+	  generateModel() {
+	    this.pieces = [];
+	    this.edges = [];
+
+	    const pieceSize = 1 / 3;
+
+	    const mainMaterial = new THREE.MeshLambertMaterial();
+
+	    const pieceMesh = new THREE.Mesh(
+	      new RoundedBoxGeometry(pieceSize, this.geometry.pieceCornerRadius, 3),
+	      mainMaterial.clone()
+	    );
+
+	    const edgeGeometry = RoundedPlaneGeometry(
+	      pieceSize,
+	      this.geometry.edgeCornerRoundness,
+	      this.geometry.edgeDepth
+	    );
+
+	    this.positions.forEach((position, index) => {
+	      const piece = new THREE.Object3D();
+	      const pieceCube = pieceMesh.clone();
+	      const pieceEdges = [];
+
+	      piece.position.copy(position.clone().divideScalar(3));
+	      piece.add(pieceCube);
+	      piece.name = index;
+	      piece.edgesName = "";
+
+	      position.edges.forEach((position) => {
+	        const edge = new THREE.Mesh(edgeGeometry, mainMaterial.clone());
+	        const name = ["L", "R", "D", "U", "B", "F"][position];
+	        const distance = pieceSize / 2;
+
+	        edge.position.set(
+	          distance * [-1, 1, 0, 0, 0, 0][position],
+	          distance * [0, 0, -1, 1, 0, 0][position],
+	          distance * [0, 0, 0, 0, -1, 1][position]
+	        );
+
+	        edge.rotation.set(
+	          (Math.PI / 2) * [0, 0, 1, -1, 0, 0][position],
+	          (Math.PI / 2) * [-1, 1, 0, 0, 2, 0][position],
+	          0
+	        );
+
+	        edge.scale.set(
+	          this.geometry.edgeScale,
+	          this.geometry.edgeScale,
+	          this.geometry.edgeScale
+	        );
+
+	        edge.name = name;
+
+	        piece.add(edge);
+	        pieceEdges.push(name);
+	        this.edges.push(edge);
+	      });
+
+	      piece.userData.edges = pieceEdges;
+	      piece.userData.cube = pieceCube;
+
+	      piece.userData.start = {
+	        position: piece.position.clone(),
+	        rotation: piece.rotation.clone(),
+	      };
+
+	      this.pieces.push(piece);
+	    });
+	  }
+
+	  updateColors(colors) {
+	    if (typeof this.pieces !== "object" && typeof this.edges !== "object")
+	      return;
+
+	    this.pieces.forEach((piece) =>
+	      piece.userData.cube.material.color.setHex(colors.P)
+	    );
+	    this.edges.forEach((edge) => edge.material.color.setHex(colors[edge.name]));
+	  }
+
+	  loadFromData(data) {
+	    this.size = data.size;
+
+	    this.reset();
+	    this.init();
+
+	    this.pieces.forEach((piece) => {
+	      const index = data.names.indexOf(piece.name);
 
 	      const position = data.positions[index];
 	      const rotation = data.rotations[index];
 
-	      piece.position.set( position.x, position.y, position.z );
-	      piece.rotation.set( rotation.x, rotation.y, rotation.z );
-
-	    } );
-
-		}
-
+	      piece.position.set(position.x, position.y, position.z);
+	      piece.rotation.set(rotation.x, rotation.y, rotation.z);
+	    });
+	  }
 	}
 
 	const Easing = {
@@ -1709,97 +1682,65 @@
 	}
 
 	class Scrambler {
+	  constructor(game) {
+	    this.game = game;
 
-		constructor( game ) {
+	    this.dificulty = 0;
 
-			this.game = game;
+	    this.scrambleLength = {
+	      2: [7, 9, 11],
+	      3: [20, 25, 30],
+	      4: [30, 40, 50],
+	      5: [40, 60, 80],
+	    };
 
-			this.dificulty = 0;
+	    this.moves = [];
+	    this.conveted = [];
+	    this.pring = "";
+	  }
 
-			this.scrambleLength = {
-				2: [ 7, 9, 11 ],
-				3: [ 20, 25, 30 ],
-				4: [ 30, 40, 50 ],
-				5: [ 40, 60, 80 ],
-			};
+	  scramble(scramble) {
+	    this.moves = typeof scramble !== "undefined" ? scramble.split(" ") : [];
 
-			this.moves = [];
-			this.conveted = [];
-			this.pring = '';
+	    this.callback = () => {};
+	    this.convert();
+	    this.print = this.moves.join(" ");
 
-		}
+	    return this;
+	  }
 
-		scramble( scramble ) {
-			console.log( scramble );
-			this.moves = ( typeof scramble !== 'undefined' ) ? scramble.split( ' ' ) : [];
+	  convert() {
+	    this.converted = [];
 
-			// if ( this.moves.length < 1 ) {
+	    this.moves.forEach((move) => {
+	      const convertedMove = this.convertMove(move);
+	      const modifier = move.charAt(1);
 
-			// 	const scrambleLength = this.scrambleLength[ this.game.cube.size ][ this.dificulty ];
+	      this.converted.push(convertedMove);
+	      if (modifier == "2") this.converted.push(convertedMove);
+	    });
+	  }
 
-			// 	const faces = this.game.cube.size < 4 ? 'UDLRFB' : 'UuDdLlRrFfBb';
-			// 	const modifiers = [ "", "'", "2"];
-			// 	const total = ( typeof scramble === 'undefined' ) ? scrambleLength : scramble;
+	  convertMove(move) {
+	    const face = move.charAt(0);
+	    const modifier = move.charAt(1);
 
-			// 	while ( count < total ) {
+	    const axis = { D: "y", U: "y", L: "x", R: "x", F: "z", B: "z" }[
+	      face.toUpperCase()
+	    ];
+	    let row = { D: -1, U: 1, L: -1, R: 1, F: 1, B: -1 }[face.toUpperCase()];
 
-			// 		const move =
-			// 			faces[ Math.floor( Math.random() * faces.length ) ] +
-			// 			modifiers[ Math.floor( Math.random() * 3 ) ];
+	    if (this.game.cube.size > 3 && face !== face.toLowerCase()) row = row * 2;
 
-			// 		if ( count > 0 && move.charAt( 0 ) == this.moves[ count - 1 ].charAt( 0 ) ) continue;
-			// 		if ( count > 1 && move.charAt( 0 ) == this.moves[ count - 2 ].charAt( 0 ) ) continue;
+	    const position = new THREE.Vector3();
+	    position[
+	      { D: "y", U: "y", L: "x", R: "x", F: "z", B: "z" }[face.toUpperCase()]
+	    ] = row;
 
-			// 		this.moves.push( move );
-			// 		count ++;
+	    const angle = (Math.PI / 2) * -row * (modifier == "'" ? -1 : 1);
 
-			// 	}
-
-			// }
-
-			this.callback = () => {};
-			this.convert();
-			this.print = this.moves.join( ' ' );
-
-			return this;
-
-		}
-
-		convert( moves ) {
-
-			this.converted = [];
-
-			this.moves.forEach( move => {
-
-				const convertedMove = this.convertMove( move );
-				const modifier = move.charAt( 1 );
-
-				this.converted.push( convertedMove );
-				if ( modifier == "2" ) this.converted.push( convertedMove );
-
-			} );
-
-		}
-
-		convertMove( move ) {
-
-			const face = move.charAt( 0 );
-			const modifier = move.charAt( 1 );
-
-			const axis = { D: 'y', U: 'y', L: 'x', R: 'x', F: 'z', B: 'z' }[ face.toUpperCase() ];
-			let row = { D: -1, U: 1, L: -1, R: 1, F: 1, B: -1 }[ face.toUpperCase() ];
-
-			if ( this.game.cube.size > 3 && face !== face.toLowerCase() ) row = row * 2;
-
-			const position = new THREE.Vector3();
-			position[ { D: 'y', U: 'y', L: 'x', R: 'x', F: 'z', B: 'z' }[ face.toUpperCase() ] ] = row;
-
-			const angle = ( Math.PI / 2 ) * - row * ( ( modifier == "'" ) ? -1 : 1 );
-
-			return { position, axis, angle, name: move };
-
-		}
-
+	    return { position, axis, angle, name: move };
+	  }
 	}
 
 	class Transition {
@@ -7444,7 +7385,6 @@
 	  Menu: 0,
 	  Playing: 1,
 	  Complete: 2,
-
 	  Prefs: 4,
 	  Theme: 5,
 	};
@@ -7559,6 +7499,7 @@
 	      U: { top: "B", bottom: "F", left: "L", right: "R" },
 	      D: { top: "F", bottom: "B", left: "L", right: "R" },
 	    };
+
 	    const colorButtons = document.getElementById("colorButtons");
 	    const face = document.getElementById("face");
 	    const faceSelector = document.getElementById("faceSelector");
@@ -7633,15 +7574,6 @@
 	    // Face change logic with validation
 	    faceSelector.addEventListener("change", (event) => {
 	      const newFace = event.target.value;
-	      const currentColors = cubeState[currentFace];
-	      currentColors.every((color) => color !== "#555");
-
-	      // if (!isComplete) {
-	      //   alert(`❗ Fill all 9 cuboids on the "${currentFace}" face before switching.`);
-	      //   faceSelector.value = currentFace;
-	      //   return;
-	      // }
-
 	      currentFace = newFace;
 	      cubeState[currentFace].forEach((color, i) => {
 	        cuboids[i].style.backgroundColor = color;
@@ -7652,8 +7584,6 @@
 	    // Print/validate cube state
 	    printButton.addEventListener("click", () => {
 	      output.style.display = "block";
-	      console.log("cubeState", cubeState);
-
 	      const allColors = Object.values(cubeState).flat();
 	      const usedColors = new Set(allColors);
 	      usedColors.delete("#555");
@@ -7687,17 +7617,14 @@
 	        `✅ Cube is valid!\n` + JSON.stringify(cubeState, null, 2);
 
 	      const solverString = convertStateForSolver(cubeState);
-	      console.log("solverString", solverString);
 
 	      const solution = solver(solverString.toLowerCase());
-	      console.log("solution", solution);
 
 	      if (solution && typeof solution === "string") {
 	        // The solver returns moves with 'prime' (e.g., "Rprime"),
 	        // but the scrambler expects an apostrophe (e.g., "R'").
 	        const scramblerFriendlySolution = solution.replace(/prime/g, "'");
 
-	        console.log("Solution:", scramblerFriendlySolution);
 	        solutionSteps = scramblerFriendlySolution;
 	        output.textContent += `\nSolution: ${scramblerFriendlySolution}`;
 
@@ -7710,16 +7637,13 @@
 
 	    // Initialize face with default face data
 	    cubeState[currentFace].forEach((color, i) => {
-	      console.log("color", color, currentFace);
 	      cuboids[i].style.backgroundColor = color;
 	    });
 
 	    function createStrip(id) {
 	      const container = document.getElementById(id);
-	      console.log("container", id);
 	      container.innerHTML = "";
 	      for (let i = 0; i < 9; i++) {
-	        console.log("i", i);
 	        const tile = document.createElement("div");
 	        tile.style.width = "30px";
 	        tile.style.height = "30px";
@@ -7731,14 +7655,12 @@
 	    }
 
 	    function updateSurroundingFaces() {
-	      console.log("updateSurroundingFaces");
 	      const adj = adjacentFaces[currentFace];
 
 	      function updateStrip(stripId, faceKey) {
 	        const container = document.getElementById(stripId);
 	        const tiles = container.children;
 	        const colors = cubeState[faceKey];
-	        console.log("colors", colors, faceKey, tiles);
 
 	        for (let i = 0; i < 9; i++) {
 	          tiles[i].style.backgroundColor = colors[i];
@@ -7908,7 +7830,6 @@
 	        st = st + data;
 	        if (sol[index + 1] == `'` || sol[index + 1] == "2")
 	          st = st + sol[index + 1];
-	        console.log("data", st, data);
 	        newData.push(st);
 	      }
 	    });
@@ -7962,8 +7883,6 @@
 
 	    this.dom.buttons.prev.onclick = (event) => {
 	      if (presentIndex <= 0) {
-	        console.log("Start of solution.");
-	        // Optionally disable the button
 	        this.dom.buttons.prev.style.pointerEvents = "none";
 	        this.dom.buttons.prev.style.opacity = "0.5";
 	        return;

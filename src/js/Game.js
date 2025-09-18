@@ -15,7 +15,6 @@ const STATE = {
   Menu: 0,
   Playing: 1,
   Complete: 2,
-
   Prefs: 4,
   Theme: 5,
 };
@@ -31,13 +30,9 @@ const BUTTONS = {
 
 const SHOW = true;
 const HIDE = false;
-
-const FAST = true;
-const SLOW = false;
 let solutionSteps = "";
 let scramble = [];
 let presentIndex = 0;
-let solutionStepsArray = [];
 
 class Game {
   constructor() {
@@ -135,7 +130,6 @@ class Game {
       D: { top: "F", bottom: "B", left: "L", right: "R" },
     };
 
-    const COLORS = Object.values(FACE_COLORS);
     const colorButtons = document.getElementById("colorButtons");
     const face = document.getElementById("face");
     const faceSelector = document.getElementById("faceSelector");
@@ -210,15 +204,6 @@ class Game {
     // Face change logic with validation
     faceSelector.addEventListener("change", (event) => {
       const newFace = event.target.value;
-      const currentColors = cubeState[currentFace];
-      const isComplete = currentColors.every((color) => color !== "#555");
-
-      // if (!isComplete) {
-      //   alert(`❗ Fill all 9 cuboids on the "${currentFace}" face before switching.`);
-      //   faceSelector.value = currentFace;
-      //   return;
-      // }
-
       currentFace = newFace;
       cubeState[currentFace].forEach((color, i) => {
         cuboids[i].style.backgroundColor = color;
@@ -229,7 +214,6 @@ class Game {
     // Print/validate cube state
     printButton.addEventListener("click", () => {
       output.style.display = "block";
-=
       const allColors = Object.values(cubeState).flat();
       const usedColors = new Set(allColors);
       usedColors.delete("#555");
@@ -529,7 +513,6 @@ class Game {
 
     this.dom.buttons.prev.onclick = (event) => {
       if (presentIndex <= 0) {
-     
         this.dom.buttons.prev.style.pointerEvents = "none";
         this.dom.buttons.prev.style.opacity = "0.5";
         return;
