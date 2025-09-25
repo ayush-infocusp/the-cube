@@ -677,6 +677,10 @@ class Game {
     }
 
     if (show) {
+      // Hide the prev/next buttons when the cube is solved
+      this.dom.buttons.prev.style.opacity = "0";
+      this.dom.buttons.next.style.opacity = "0";
+
       this.transition.buttons(BUTTONS.Complete, BUTTONS.Playing);
 
       this.state = STATE.Complete;

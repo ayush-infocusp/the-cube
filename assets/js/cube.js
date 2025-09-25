@@ -5115,6 +5115,11 @@
 	  // Check if the cube is already solved.
 	  if (cube.isSolved()) {
 	    console.log("The provided cube is already solved!");
+	    // Hide the prev/next buttons if the cube is solved
+	    const prevButton = document.querySelector(".btn--prev");
+	    const nextButton = document.querySelector(".btn--next");
+	    if (prevButton) prevButton.style.opacity = "0";
+	    if (nextButton) nextButton.style.opacity = "0";
 	    return "";
 	  }
 	  const solution = await cube.solve();
@@ -5797,6 +5802,10 @@
 	    }
 
 	    if (show) {
+	      // Hide the prev/next buttons when the cube is solved
+	      this.dom.buttons.prev.style.opacity = "0";
+	      this.dom.buttons.next.style.opacity = "0";
+
 	      this.transition.buttons(BUTTONS.Complete, BUTTONS.Playing);
 
 	      this.state = STATE.Complete;

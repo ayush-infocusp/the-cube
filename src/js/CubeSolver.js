@@ -10,6 +10,11 @@ export default async function solveCube(initialStateString) {
   // Check if the cube is already solved.
   if (cube.isSolved()) {
     console.log("The provided cube is already solved!");
+    // Hide the prev/next buttons if the cube is solved
+    const prevButton = document.querySelector(".btn--prev");
+    const nextButton = document.querySelector(".btn--next");
+    if (prevButton) prevButton.style.opacity = "0";
+    if (nextButton) nextButton.style.opacity = "0";
     return "";
   }
   const solution = await cube.solve();

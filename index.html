@@ -102,44 +102,59 @@
           <!-- <icon reset></icon> -->
         </button>
         <button
-          class="btn btn--bl btn--prev"
+          class="btn btn--bc btn--prev"
           style="
-            transform: translate3d(0px, 0em, 0px);
+            transform: translate3d(-2.5em, 0px, 0px);
             pointer-events: none;
-            opacity: 1;
+            opacity: 0;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 50%;
+            width: 2em;
+            height: 2em;
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
           "
-        >
-          <svg
+        ><svg
             class="icon"
             viewBox="0 0 512 512"
             style="width: 1em; height: 1em"
-          >
-            <path
+          ><path
               transform="translate(512, 0) scale(-1,1)"
               fill="currentColor"
               d="M503.691 189.836L327.687 37.851C312.281 24.546 288 35.347 288 56.015v80.053C127.371 137.907 0 170.1 0 322.326c0 61.441 39.581 122.309 83.333 154.132 13.653 9.931 33.111-2.533 28.077-18.631C66.066 312.814 132.917 274.316 288 272.085V360c0 20.7 24.3 31.453 39.687 18.164l176.004-152c11.071-9.562 11.086-26.753 0-36.328z"
             ></path>
           </svg>
+         <span style="font-size: small;color: #111;">PREV</span>
         </button>
         <button
-          class="btn btn--br btn--next"
+          class="btn btn--bc btn--next"
           style="
-            transform: translate3d(0px, 0em, 0px);
+            transform: translate3d(2.5em, 0px, 0px);
             pointer-events: none;
-            opacity: 1;
-          "
-        >
+            opacity: 0;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 50%;
+            width: 2em;
+            height: 2em;
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+          ">
           <svg
             class="icon"
             viewBox="0 0 512 512"
             style="width: 1em; height: 1em; transform: rotateY(180deg)"
-          >
-            <path
+          ><path
               transform="translate(512, 0) scale(-1,1)"
               fill="currentColor"
-              d="M503.691 189.836L327.687 37.851C312.281 24.546 288 35.347 288 56.015v80.053C127.371 137.907 0 170.1 0 322.326c0 61.441 39.581 122.309 83.333 154.132 13.653 9.931 33.111-2.533 28.077-18.631C66.066 312.814 132.917 274.316 288 272.085V360c0 20.7 24.3 31.453 39.687 18.164l176.004-152c11.071-9.562 11.086-26.753 0-36.328z"
-            ></path>
+              d="M503.691 189.836L327.687 37.851C312.281 24.546 288 35.347 288 56.015v80.053C127.371 137.907 0 170.1 0 322.326c0 61.441 39.581 122.309 83.333 154.132 13.653 9.931 33.111-2.533 28.077-18.631C66.066 312.814 132.917 274.316 288 272.085V360c0 20.7 24.3 31.453 39.687 18.164l176.004-152c11.071-9.562 11.086-26.753 0-36.328z"></path>
           </svg>
+          <span style="font-size: small;color: #111;">NEXT</span>
         </button>
       </div>
     </div>
@@ -160,12 +175,17 @@
       "
     >
       <div
-        style="display: flex; justify-content: space-around; max-height: 80px"
+        style="
+          display: flex;
+          justify-content: space-around;
+          align-items: center;
+          max-height: 30px;
+        "
       >
-        <div id="colorButtons" style="margin-bottom: 10px"></div>
+        <div id="colorButtons" style="height: 30px; display: contents"></div>
         <select
           id="faceSelector"
-          style="width: 100px; height: 80px; font-size: 16px"
+          style="width: 100px; height: 30px; font-size: 16px"
         >
           >
           <option value="F">Front (F)</option>
@@ -177,10 +197,13 @@
         </select>
         <button
           id="printButton"
-          style="padding: 5px 10px; margin-bottom: 10px; font-size: 16px"
+          style="
+            padding: 5px 10px;
+            font-size: 16px;
+            height: 30px;
+          "
         >
-          ✅ Print Cube
-        </button>
+          ✅ Print Cube </button>
         <pre
           id="output"
           style="
