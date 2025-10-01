@@ -346,7 +346,7 @@ class Game {
     this.themes = new Themes(this);
     this.themeEditor = new ThemeEditor(this);
 
-    this.initActions();
+    // this.initActions();
 
     this.state = STATE.Menu;
     this.newGame = false;
@@ -358,6 +358,7 @@ class Game {
     this.transition.init();
 
     this.storage.loadGame();
+    this.initActions();
 
     setTimeout(() => {
       this.transition.float();
@@ -372,6 +373,7 @@ class Game {
   }
 
   initActions() {
+    this.scrambleInitLogic();
     let tappedTwice = false;
 
     this.dom.game.addEventListener(
@@ -424,6 +426,15 @@ class Game {
     this.dom.buttons.theme.onclick = (event) => this.theme(SHOW);
 
     this.controls.onSolved = () => this.complete(SHOW);
+  }
+
+  scrambleInitLogic(){
+    const solutionStepsArray = this.getNewOutput(solutionSteps);
+    this.solutionStepsArray = solutionStepsArray;
+    scramble = this._getScrambleFromSolution(solutionSteps);
+    this.scramble = scramble;
+    this.scrambler.scramble(scramble);
+    this.controls.scrambleCube();
   }
 
   _getScrambleFromSolution(solution) {
@@ -545,8 +556,8 @@ class Game {
     if (show) {
       if (!this.saved) {
         presentIndex = 0; // Reset for new solution
-        const solutionStepsArray = this.getNewOutput(solutionSteps);
-        this.solutionStepsArray = solutionStepsArray;
+        // const solutionStepsArray = this.getNewOutput(solutionSteps);
+        // this.solutionStepsArray = solutionStepsArray;
         this.dom.buttons.next.style.pointerEvents = "all";
         this.dom.buttons.next.style.opacity = "1";
         this.dom.buttons.prev.style.pointerEvents = "none";
@@ -554,13 +565,12 @@ class Game {
         const totalSteps = this.solutionStepsArray.length;
         this.dom.texts.step.querySelector(
           "span"
-        ).textContent = `(0/${totalSteps}) Prev: - | Current: Start | Next: ${
-          this.solutionStepsArray[0] || "-"
-        }`;
-        scramble = this._getScrambleFromSolution(solutionSteps);
-        this.scramble = scramble;
-        this.scrambler.scramble(scramble);
-        this.controls.scrambleCube();
+        ).textContent = `(0/${totalSteps}) Prev: - | Current: Start | Next: ${this.solutionStepsArray[0] || "-"
+          }`;
+        // scramble = this._getScrambleFromSolution(solutionSteps);
+        // this.scramble = scramble;
+        // this.scrambler.scramble(scramble);
+        // this.controls.scrambleCube();
         this.nextButtonEvent();
         this.prevButtonEvent();
       }
@@ -711,6 +721,7 @@ class Game {
         this.transition.elevate(HIDE);
         this.transition.buttons(BUTTONS.Menu, BUTTONS.Complete);
         this.transition.cube(SHOW);
+        this.scrambleInitLogic();
         this.transition.title(SHOW);
       }, 1000);
 
