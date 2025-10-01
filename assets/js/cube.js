@@ -5459,6 +5459,7 @@
 	        prev: document.querySelector(".btn--prev"),
 	      },
 	    };
+	    this.homeButton = document.querySelector(".btn--home");
 
 	    this.world = new World(this);
 	    this.cube = new Cube$1(this);
@@ -5553,7 +5554,7 @@
 	    this.controls.onSolved = () => this.complete(SHOW);
 	  }
 
-	  scrambleInitLogic(){
+	  scrambleInitLogic() {
 	    const solutionStepsArray = this.getNewOutput(solutionSteps);
 	    this.solutionStepsArray = solutionStepsArray;
 	    scramble = this._getScrambleFromSolution(solutionSteps);
@@ -5691,7 +5692,7 @@
 	        this.dom.texts.step.querySelector(
 	          "span"
 	        ).textContent = `(0/${totalSteps}) Prev: - | Current: Start | Next: ${this.solutionStepsArray[0] || "-"
-          }`;
+        }`;
 	        // scramble = this._getScrambleFromSolution(solutionSteps);
 	        // this.scramble = scramble;
 	        // this.scrambler.scramble(scramble);
@@ -5710,6 +5711,7 @@
 	      this.transition.buttons(BUTTONS.None, BUTTONS.Menu);
 
 	      this.transition.zoom(STATE.Playing, duration);
+	      this.homeButton.style.display = "none";
 	      this.transition.title(HIDE);
 	      this.dom.texts.step.style.opacity = 1;
 
@@ -5847,6 +5849,8 @@
 	        this.transition.buttons(BUTTONS.Menu, BUTTONS.Complete);
 	        this.transition.cube(SHOW);
 	        this.scrambleInitLogic();
+	        this.homeButton.style.display = "flex";
+
 	        this.transition.title(SHOW);
 	      }, 1000);
 

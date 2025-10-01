@@ -1,107 +1,82 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta charset="UTF-8" />
-    <meta
-      name="viewport"
-      content="width=device-width,height=device-height,user-scalable=no,initial-scale=1.0,maximum-scale=1.0,minimum-scale=1.0"
-    />
 
-    <title>The Cube - A Rubik's Cube Game</title>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport"
+    content="width=device-width,height=device-height,user-scalable=no,initial-scale=1.0,maximum-scale=1.0,minimum-scale=1.0" />
 
-    <link
-      rel="apple-touch-icon"
-      sizes="180x180"
-      href="assets/icons/apple-touch-icon.png"
-    />
-    <link
-      rel="icon"
-      type="image/png"
-      sizes="32x32"
-      href="assets/icons/favicon-32x32.png"
-    />
-    <link
-      rel="icon"
-      type="image/png"
-      sizes="16x16"
-      href="assets/icons/favicon-16x16.png"
-    />
-    <link rel="manifest" href="assets/icons/site.webmanifest" />
-    <link
-      rel="mask-icon"
-      href="assets/icons/safari-pinned-tab.svg"
-      color="#5bbad5"
-    />
-    <link rel="shortcut icon" href="assets/icons/favicon.ico" />
-    <meta name="theme-color" content="#ffffff" />
+  <title>The Cube - A Rubik's Cube Game</title>
 
-    <link rel="stylesheet" type="text/css" href="assets/css/styles.css" />
-  </head>
+  <link rel="apple-touch-icon" sizes="180x180" href="assets/icons/apple-touch-icon.png" />
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/icons/favicon-32x32.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="assets/icons/favicon-16x16.png" />
+  <link rel="manifest" href="assets/icons/site.webmanifest" />
+  <link rel="mask-icon" href="assets/icons/safari-pinned-tab.svg" color="#5bbad5" />
+  <link rel="shortcut icon" href="assets/icons/favicon.ico" />
+  <meta name="theme-color" content="#ffffff" />
 
-  <body>
-    <div class="ui" id="main-ui" style="display: none">
-      <div class="ui__background"></div>
+  <link rel="stylesheet" type="text/css" href="assets/css/styles.css" />
+</head>
 
-      <div class="ui__game"></div>
+<body>
+  <div class="ui" id="main-ui" style="display: none">
+    <div class="ui__background"></div>
 
-      <div class="ui__texts">
-        <h1 class="text text--title">
-        </h1>
-        <div class="text text--note">Double tap to start</div>
-        <div class="text text--step" style="top: 2em; opacity: 0">
-          <span></span>
-        </div>
-        <div class="text text--complete">
-          <span>Complete!</span>
-        </div>
-        <div class="text text--best-time">
-          <icon trophy></icon>
-          <span>Best Time!</span>
-        </div>
+    <div class="ui__game"></div>
+
+    <div class="ui__texts">
+      <h1 class="text text--title">
+      </h1>
+      <div class="text text--note">Double tap to start</div>
+      <div class="text text--step" style="top: 2em; opacity: 0">
+        <span></span>
       </div>
-
-      <div class="ui__prefs">
-        <range name="size" title="Cube Size" list="2,3,4,5"></range>
-        <range
-          name="flip"
-          title="Flip Type"
-          list="Swift&nbsp;,Smooth,Bounce"
-        ></range>
-        <range name="scramble" title="Scramble Length" list="20,25,30"></range>
-        <range
-          name="fov"
-          title="Camera Angle"
-          list="Ortographic,Perspective"
-        ></range>
-        <range
-          name="theme"
-          title="Color Scheme"
-          list="Cube,Erno,Dust,Camo,Rain"
-        ></range>
+      <div class="text text--complete">
+        <span>Complete!</span>
       </div>
-
-      <div class="ui__theme">
-        <range name="hue" title="Hue" color></range>
-        <range name="saturation" title="Saturation" color></range>
-        <range name="lightness" title="Lightness" color></range>
+      <div class="text text--best-time">
+        <icon trophy></icon>
+        <span>Best Time!</span>
       </div>
+    </div>
 
-      <div class="ui__buttons">
-        <button class="btn btn--br btn--prefs">
-          <!-- <icon settings></icon> -->
-        </button>
-        <button class="btn btn--bl btn--back">
-          <!-- <icon back></icon> -->
-        </button>
-        <button class="btn btn--br btn--theme">
-          <!-- <icon theme></icon> -->
-        </button>
-        <button class="btn btn--br btn--reset">
-          <!-- <icon reset></icon> -->
-        </button>
-        <button
-          class="btn btn--bc btn--prev"
-          style="
+    <div class="ui__prefs">
+      <range name="size" title="Cube Size" list="2,3,4,5"></range>
+      <range name="flip" title="Flip Type" list="Swift&nbsp;,Smooth,Bounce"></range>
+      <range name="scramble" title="Scramble Length" list="20,25,30"></range>
+      <range name="fov" title="Camera Angle" list="Ortographic,Perspective"></range>
+      <range name="theme" title="Color Scheme" list="Cube,Erno,Dust,Camo,Rain"></range>
+    </div>
+
+    <div class="ui__theme">
+      <range name="hue" title="Hue" color></range>
+      <range name="saturation" title="Saturation" color></range>
+      <range name="lightness" title="Lightness" color></range>
+    </div>
+
+    <div class="ui__buttons">
+      <button class="btn btn--br btn--prefs">
+        <!-- <icon settings></icon> -->
+      </button>
+      <button class="btn btn--bl btn--back">
+        <!-- <icon back></icon> -->
+      </button>
+      <button class="btn btn--br btn--theme">
+        <!-- <icon theme></icon> -->
+      </button>
+      <button class="btn btn--br btn--reset">
+        <!-- <icon reset></icon> -->
+      </button>
+      <button class="btn btn--bl btn--home"
+        style="display:none; 
+        background: rgba(0, 0, 0, 0.2);
+        opacity: 1;
+        transform: translate3d(0em, 0px, 0px);
+        padding: 4px;
+        border-radius: 10px;"
+      >Home</button>
+      <button class="btn btn--bc btn--prev" style="
             transform: translate3d(-2.5em, 0px, 0px);
             left: 25%;
             top: 50%;
@@ -115,22 +90,14 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
-          "
-        ><svg
-            class="icon"
-            viewBox="0 0 512 512"
-            style="width: 1em; height: 1em"
-          ><path
-              transform="translate(512, 0) scale(-1,1)"
-              fill="currentColor"
-              d="M503.691 189.836L327.687 37.851C312.281 24.546 288 35.347 288 56.015v80.053C127.371 137.907 0 170.1 0 322.326c0 61.441 39.581 122.309 83.333 154.132 13.653 9.931 33.111-2.533 28.077-18.631C66.066 312.814 132.917 274.316 288 272.085V360c0 20.7 24.3 31.453 39.687 18.164l176.004-152c11.071-9.562 11.086-26.753 0-36.328z"
-            ></path>
-          </svg>
-         <span style="font-size: small;color: #111;">PREV</span>
-        </button>
-        <button
-          class="btn btn--bc btn--next"
-          style="
+          "><svg class="icon" viewBox="0 0 512 512" style="width: 1em; height: 1em">
+          <path transform="translate(512, 0) scale(-1,1)" fill="currentColor"
+            d="M503.691 189.836L327.687 37.851C312.281 24.546 288 35.347 288 56.015v80.053C127.371 137.907 0 170.1 0 322.326c0 61.441 39.581 122.309 83.333 154.132 13.653 9.931 33.111-2.533 28.077-18.631C66.066 312.814 132.917 274.316 288 272.085V360c0 20.7 24.3 31.453 39.687 18.164l176.004-152c11.071-9.562 11.086-26.753 0-36.328z">
+          </path>
+        </svg>
+        <span style="font-size: small;color: #fff;">PREV</span>
+      </button>
+      <button class="btn btn--bc btn--next" style="
             transform: translate3d(2.5em, 0px, 0px);
             left: 70%;
             top: 50%;
@@ -145,24 +112,18 @@
             justify-content: center;
             align-items: center;
           ">
-          <svg
-            class="icon"
-            viewBox="0 0 512 512"
-            style="width: 1em; height: 1em; transform: rotateY(180deg)"
-          ><path
-              transform="translate(512, 0) scale(-1,1)"
-              fill="currentColor"
-              d="M503.691 189.836L327.687 37.851C312.281 24.546 288 35.347 288 56.015v80.053C127.371 137.907 0 170.1 0 322.326c0 61.441 39.581 122.309 83.333 154.132 13.653 9.931 33.111-2.533 28.077-18.631C66.066 312.814 132.917 274.316 288 272.085V360c0 20.7 24.3 31.453 39.687 18.164l176.004-152c11.071-9.562 11.086-26.753 0-36.328z"></path>
-          </svg>
-          <span style="font-size: small;color: #111;">NEXT</span>
-        </button>
-      </div>
+        <svg class="icon" viewBox="0 0 512 512" style="width: 1em; height: 1em; transform: rotateY(180deg)">
+          <path transform="translate(512, 0) scale(-1,1)" fill="currentColor"
+            d="M503.691 189.836L327.687 37.851C312.281 24.546 288 35.347 288 56.015v80.053C127.371 137.907 0 170.1 0 322.326c0 61.441 39.581 122.309 83.333 154.132 13.653 9.931 33.111-2.533 28.077-18.631C66.066 312.814 132.917 274.316 288 272.085V360c0 20.7 24.3 31.453 39.687 18.164l176.004-152c11.071-9.562 11.086-26.753 0-36.328z">
+          </path>
+        </svg>
+        <span style="font-size: small;color: #fff;">NEXT</span>
+      </button>
     </div>
+  </div>
 
 
-    <div
-      id="custom-cube"
-      style="
+  <div id="custom-cube" style="
         background: #111;
         color: #fff;
         font-family: sans-serif;
@@ -173,41 +134,30 @@
         flex-direction: column;
         justify-content: center;
         align-items: center;
-      "
-    >
-      <div
-        style="
+      ">
+    <div style="
           display: flex;
           justify-content: space-around;
           align-items: center;
           max-height: 30px;
-        "
-      >
-        <div id="colorButtons" style="height: 30px; display: contents"></div>
-        <select
-          id="faceSelector"
-          style="width: 100px; height: 30px; font-size: 16px"
+        ">
+      <div id="colorButtons" style="height: 30px; display: contents"></div>
+      <select id="faceSelector" style="width: 100px; height: 30px; font-size: 16px">
         >
-          >
-          <option value="F">Front (F)</option>
-          <option value="B">Back (B)</option>
-          <option value="L">Left (L)</option>
-          <option value="R">Right (R)</option>
-          <option value="U">Top (U)</option>
-          <option value="D">Bottom (D)</option>
-        </select>
-        <button
-          id="printButton"
-          style="
+        <option value="F">Front (F)</option>
+        <option value="B">Back (B)</option>
+        <option value="L">Left (L)</option>
+        <option value="R">Right (R)</option>
+        <option value="U">Top (U)</option>
+        <option value="D">Bottom (D)</option>
+      </select>
+      <button id="printButton" style="
             padding: 5px 10px;
             font-size: 16px;
             height: 30px;
-          "
-        >
-          ✅ Print Cube </button>
-        <pre
-          id="output"
-          style="
+          ">
+        ✅ Print Cube </button>
+      <pre id="output" style="
             display: none;
             background: #222;
             padding: 10px;
@@ -216,21 +166,16 @@
             width: 200px;
             font-size: 10px;
             overflow: auto;
-          "
-        ></pre>
-      </div>
-      <div
-        style="
+          "></pre>
+    </div>
+    <div style="
           display: flex;
           flex-direction: column;
           align-items: center;
           width: 100%;
-        "
-      >
-        <!-- <div class="ui__game" style="width: 100%; max-width: 400px; height: 400px; position: relative; margin-bottom: 20px;"></div> -->
-        <div
-          id="surrounding"
-          style="
+        ">
+      <!-- <div class="ui__game" style="width: 100%; max-width: 400px; height: 400px; position: relative; margin-bottom: 20px;"></div> -->
+      <div id="surrounding" style="
             display: grid;
             grid-template-areas:
               '. top .'
@@ -242,57 +187,42 @@
             margin: 20px 0;
             justify-content: center;
             align-items: center;
-          "
-        >
-          <div
-            id="adj-top"
-            style="
+          ">
+        <div id="adj-top" style="
               display: grid;
               grid-template-columns: repeat(3, 30px);
               grid-area: top;
               margin-inline: auto;
-            "
-          ></div>
-          <div
-            id="adj-left"
-            style="
+            "></div>
+        <div id="adj-left" style="
               display: grid;
               grid-template-columns: repeat(3, 30px);
               grid-area: left;
-            "
-          ></div>
-          <div
-            id="face"
-            style="
+            "></div>
+        <div id="face" style="
               display: grid;
               grid-template-columns: repeat(3, 50px);
               gap: 4px;
               margin: 10px 0;
               grid-area: center;
-            "
-          ></div>
-          <div
-            id="adj-right"
-            style="
+            "></div>
+        <div id="adj-right" style="
               display: grid;
               grid-template-columns: repeat(3, 30px);
               grid-area: right;
-            "
-          ></div>
-          <div
-            id="adj-bottom"
-            style="
+            "></div>
+        <div id="adj-bottom" style="
               display: grid;
               grid-template-columns: repeat(3, 30px);
               grid-area: bottom;
               margin-inline: auto;
-            "
-          ></div>
-        </div>
+            "></div>
       </div>
     </div>
+  </div>
 
-    <script src="assets/js/three.js"></script>
-    <script src="assets/js/cube.js"></script>
-  </body>
+  <script src="assets/js/three.js"></script>
+  <script src="assets/js/cube.js"></script>
+</body>
+
 </html>
