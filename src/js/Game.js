@@ -35,6 +35,7 @@ let scramble = [];
 let presentIndex = 0;
 
 class Game {
+  is3Dsetup = false;
   constructor() {
     this.setup2DCube();
   }
@@ -243,8 +244,8 @@ class Game {
         return;
       }
 
-      output.textContent =
-        `✅ Cube is valid!\n` + JSON.stringify(cubeState, null, 2);
+      // output.textContent =
+      //   `✅ Cube is valid!\n` + JSON.stringify(cubeState, null, 2);
 
       const solverString = convertStateForSolver(cubeState);
 
@@ -255,7 +256,16 @@ class Game {
         output.textContent += `\nSolution: ${solution}`;
 
         // Use the game's scrambler and controls to animate the solution.
-        this.setup3DCube();
+        if (!this.is3Dsetup) {
+          this.setup3DCube();
+        } else {
+          const customCube = document.querySelector("#custom-cube");
+          if (customCube) customCube.style.display = "none";
+
+          const mainUi = document.querySelector("#main-ui");
+          if (mainUi) mainUi.style.display = "block";
+
+        }
       } else {
         output.textContent += "\n❌ No solution found.";
       }
@@ -307,6 +317,7 @@ class Game {
   }
 
   setup3DCube() {
+    this.is3Dsetup = true;
     const customCube = document.querySelector("#custom-cube");
     customCube.style.display = "none";
     const mainUi = document.querySelector("#main-ui");
@@ -332,9 +343,9 @@ class Game {
         theme: document.querySelector(".btn--theme"),
         next: document.querySelector(".btn--next"),
         prev: document.querySelector(".btn--prev"),
+        home: document.querySelector(".btn--home"),
       },
     };
-    this.homeButton = document.querySelector(".btn--home");
 
     this.world = new World(this);
     this.cube = new Cube(this);
@@ -346,6 +357,9 @@ class Game {
     this.confetti = new Confetti(this);
     this.themes = new Themes(this);
     this.themeEditor = new ThemeEditor(this);
+
+    // this.homeButton = document.querySelector(".btn--home");
+    // console.log(this.homeButton);
 
     // this.initActions();
 
@@ -427,6 +441,21 @@ class Game {
     this.dom.buttons.theme.onclick = (event) => this.theme(SHOW);
 
     this.controls.onSolved = () => this.complete(SHOW);
+
+  }
+
+  homeButtonEvent() {
+    console.log("Home button event");
+    this.dom.buttons.home.onclick = (event) => {
+      console.log("Home button clicked", event);
+      const customCube = document.querySelector("#custom-cube");
+      if (customCube) customCube.style.display = "flex";
+
+      const mainUi = document.querySelector("#main-ui");
+      if (mainUi) mainUi.style.display = "none";
+
+      this.dom.buttons.home.style.display = "none";
+    };
   }
 
   scrambleInitLogic() {
@@ -574,6 +603,7 @@ class Game {
         // this.controls.scrambleCube();
         this.nextButtonEvent();
         this.prevButtonEvent();
+        // this.homeButtonEvent();
       }
 
       const duration = this.saved
@@ -586,7 +616,7 @@ class Game {
       this.transition.buttons(BUTTONS.None, BUTTONS.Menu);
 
       this.transition.zoom(STATE.Playing, duration);
-      this.homeButton.style.display = "none";
+      this.dom.buttons.home.style.display = "none";
       this.transition.title(HIDE);
       this.dom.texts.step.style.opacity = 1;
 
@@ -724,8 +754,8 @@ class Game {
         this.transition.buttons(BUTTONS.Menu, BUTTONS.Complete);
         this.transition.cube(SHOW);
         this.scrambleInitLogic();
-        this.homeButton.style.display = "flex";
-
+        this.dom.buttons.home.style.display = "flex"; // Make home button visible
+        this.homeButtonEvent();
         this.transition.title(SHOW);
       }, 1000);
 
