@@ -1262,20 +1262,20 @@
 	        );
 	      }
 
-	      if (edgeIntersect !== false && this.dragIntersect !== false) {
-	        this.dragNormal = edgeIntersect.face.normal.round();
-	        this.flipType = "layer";
+	      // if (edgeIntersect !== false && this.dragIntersect !== false) {
+	      //   this.dragNormal = edgeIntersect.face.normal.round();
+	      //   this.flipType = "layer";
 
-	        this.attach(this.helper, this.edges);
+	      //   this.attach(this.helper, this.edges);
 
-	        this.helper.rotation.set(0, 0, 0);
-	        this.helper.position.set(0, 0, 0);
-	        this.helper.lookAt(this.dragNormal);
-	        this.helper.translateZ(0.5);
-	        this.helper.updateMatrixWorld();
+	      //   this.helper.rotation.set(0, 0, 0);
+	      //   this.helper.position.set(0, 0, 0);
+	      //   this.helper.lookAt(this.dragNormal);
+	      //   this.helper.translateZ(0.5);
+	      //   this.helper.updateMatrixWorld();
 
-	        this.detach(this.helper, this.edges);
-	      } else {
+	      //   this.detach(this.helper, this.edges);
+	      // } else {
 	        this.dragNormal = new THREE.Vector3(0, 0, 1);
 	        this.flipType = "none"; // was 'cube'
 	        this.flipType = "cube";
@@ -1283,7 +1283,7 @@
 	        this.helper.position.set(0, 0, 0);
 	        this.helper.rotation.set(0, Math.PI / 4, 0);
 	        this.helper.updateMatrixWorld();
-	      }
+	      // }
 
 	      let planeIntersect = this.getIntersect(
 	        position.current,
