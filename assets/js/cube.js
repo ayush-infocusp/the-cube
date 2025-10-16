@@ -1277,7 +1277,7 @@
 	      //   this.detach(this.helper, this.edges);
 	      // } else {
 	        this.dragNormal = new THREE.Vector3(0, 0, 1);
-	        this.flipType = "none"; // was 'cube'
+	        // this.flipType = "none"; // was 'cube'
 	        this.flipType = "cube";
 
 	        this.helper.position.set(0, 0, 0);
@@ -1288,7 +1288,7 @@
 	      let planeIntersect = this.getIntersect(
 	        position.current,
 	        this.helper,
-	        this.helper, 
+	        // this.helper, 
 	        false
 	      );
 	      if (planeIntersect === false) return;
@@ -1299,7 +1299,7 @@
 	    };
 
 	    this.draggable.onDragMove = (position) => {
-	      if (this.flipType === "none") return;
+	      // if (this.flipType === "none") return;
 	      if (this.scramble !== null) return;
 	      if (
 	        this.state === STILL ||
@@ -1368,7 +1368,7 @@
 	    };
 
 	    this.draggable.onDragEnd = (position) => {
-	      if (this.flipType === "none") return;
+	      // if (this.flipType === "none") return;
 	      if (this.scramble !== null) return;
 	      if (this.state !== ROTATING) {
 	        this.gettingDrag = false;
