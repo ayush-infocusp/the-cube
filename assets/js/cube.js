@@ -1560,28 +1560,26 @@
 	    }
 	  }
 
-	  scrambleCube() {
+	  scrambleCube(onComplete) {
 	    if (this.scramble == null) {
 	      this.scramble = this.game.scrambler;
-	      this.scramble.callback =
-	        typeof callback !== "function" ? () => {} : callback;
+	      this.onScrambleComplete = onComplete || (() => {});
 	    }
 
 	    const converted = this.scramble.converted;
 	    const move = converted[0];
 	    const layer = this.getLayer(move.position);
-
 	    this.flipAxis = new THREE.Vector3();
 	    this.flipAxis[move.axis] = 1;
 
 	    this.selectLayer(layer);
 	    this.rotateLayer(move.angle, true, () => {
 	      converted.shift();
-
 	      if (converted.length > 0) {
-	        this.scrambleCube();
+	        this.scrambleCube(this.onScrambleComplete);
 	      } else {
 	        this.scramble = null;
+	        this.onScrambleComplete();
 	      }
 	    });
 	  }
@@ -5343,6 +5341,7 @@
 
 	    // Print/validate cube state
 	    printButton.addEventListener("click", async () => {
+	      printButton.disabled = true;
 	      output.style.display = "block";
 	      const allColors = Object.values(cubeState).flat();
 	      const usedColors = new Set(allColors);
@@ -5352,6 +5351,7 @@
 	        output.textContent = `❌ Cube must use exactly 6 colors.\nUsed: ${[
           ...usedColors,
         ].join(", ")}`;
+	        printButton.disabled = false;
 	        return;
 	      }
 
@@ -5370,6 +5370,7 @@
 	        );
 	        output.textContent =
 	          `❌ Each color can only appear up to 9 times.\n` + msgs.join("\n");
+	        printButton.disabled = false;
 	        return;
 	      }
 
@@ -5397,6 +5398,7 @@
 	        }
 	      } else {
 	        output.textContent += "\n❌ No solution found.";
+	        printButton.disabled = false;
 	      }
 	    });
 
@@ -5520,26 +5522,29 @@
 	    this.scrambleInitLogic();
 	    let tappedTwice = false;
 
-	    this.dom.game.addEventListener(
-	      "click",
-	      (event) => {
-	        if (this.transition.activeTransitions > 0) return;
-	        if (this.state === STATE.Playing) return;
-
-	        if (this.state === STATE.Menu) {
-	          if (!tappedTwice) {
-	            tappedTwice = true;
-	            setTimeout(() => (tappedTwice = false), 300);
-	            return false;
+	    setTimeout(() => {
+	      this.dom.game.addEventListener(
+	        "click",
+	        (event) => {
+	          console.log("Game clicked", event);
+	          if (this.transition.activeTransitions > 0) return;
+	          if (this.state === STATE.Playing) return;
+	  
+	          if (this.state === STATE.Menu) {
+	            if (!tappedTwice) {
+	              tappedTwice = true;
+	              setTimeout(() => (tappedTwice = false), 300);
+	              return false;
+	            }
+	  
+	            this.game(SHOW);
+	          } else if (this.state === STATE.Complete) {
+	            this.complete(HIDE);
 	          }
-
-	          this.game(SHOW);
-	        } else if (this.state === STATE.Complete) {
-	          this.complete(HIDE);
-	        }
-	      },
-	      false
-	    );
+	        },
+	        false
+	      );
+	    }, 2000);
 
 	    this.controls.onMove = () => {
 	      if (this.newGame) {
@@ -5592,8 +5597,11 @@
 	    this.solutionStepsArray = solutionStepsArray;
 	    scramble = this._getScrambleFromSolution(solutionSteps);
 	    this.scramble = scramble;
+	    this.controls.disable(); // Disable controls before scrambling
 	    this.scrambler.scramble(scramble);
-	    this.controls.scrambleCube();
+	    this.controls.scrambleCube(() => {
+	      this.controls.enable(); // Re-enable controls after scrambling is complete
+	    });
 	  }
 
 	  _getScrambleFromSolution(solution) {
@@ -5663,13 +5671,17 @@
 	        "span"
 	      ).textContent = `(${presentIndex}/${totalSteps}) Prev: ${prevStep} | Current: ${currStep} | Next: ${nextStep}`;
 
+	      this.controls.disable();
 	      this.scrambler.scramble(presentStep);
-	      this.controls.scrambleCube();
-	      setTimeout(() => {
+	      this.controls.scrambleCube(() => {
+	        this.controls.enable();
 	        this.dom.buttons.prev.style.pointerEvents = "all";
 	        this.dom.buttons.prev.style.opacity = "1";
 	        this.dom.buttons.next.style.pointerEvents = "all";
 	        this.dom.buttons.next.style.opacity = "1";
+	      });
+	      setTimeout(() => {
+	        // This timeout is now handled in the scrambleCube callback
 	      }, 500);
 	    };
 	  }
@@ -5700,13 +5712,17 @@
 	        "span"
 	      ).textContent = `(${presentIndex}/${totalSteps}) Prev: ${prevStep} | Current: ${currStep} | Next: ${nextStep}`;
 
+	      this.controls.disable();
 	      this.scrambler.scramble(invertedStep);
-	      this.controls.scrambleCube();
-	      setTimeout(() => {
+	      this.controls.scrambleCube(() => {
+	        this.controls.enable();
 	        this.dom.buttons.prev.style.pointerEvents = "all";
 	        this.dom.buttons.prev.style.opacity = "1";
 	        this.dom.buttons.next.style.pointerEvents = "all";
 	        this.dom.buttons.next.style.opacity = "1";
+	      });
+	      setTimeout(() => {
+	        // This timeout is now handled in the scrambleCube callback
 	      }, 500);
 	    };
 	  }

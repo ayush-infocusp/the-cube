@@ -390,28 +390,26 @@ class Controls {
     }
   }
 
-  scrambleCube() {
+  scrambleCube(onComplete) {
     if (this.scramble == null) {
       this.scramble = this.game.scrambler;
-      this.scramble.callback =
-        typeof callback !== "function" ? () => {} : callback;
+      this.onScrambleComplete = onComplete || (() => {});
     }
 
     const converted = this.scramble.converted;
     const move = converted[0];
     const layer = this.getLayer(move.position);
-
     this.flipAxis = new THREE.Vector3();
     this.flipAxis[move.axis] = 1;
 
     this.selectLayer(layer);
     this.rotateLayer(move.angle, true, () => {
       converted.shift();
-
       if (converted.length > 0) {
-        this.scrambleCube();
+        this.scrambleCube(this.onScrambleComplete);
       } else {
         this.scramble = null;
+        this.onScrambleComplete();
       }
     });
   }
