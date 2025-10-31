@@ -38,6 +38,7 @@ class Game {
   is3Dsetup = false;
   constructor() {
     this.setup2DCube();
+    this.gameClickHandler = null;
   }
 
   setup2DCube() {
@@ -393,31 +394,7 @@ class Game {
 
   initActions() {
     this.scrambleInitLogic();
-    let tappedTwice = false;
-
-    setTimeout(() => {
-      this.dom.game.addEventListener(
-        "click",
-        (event) => {
-          console.log("Game clicked", event);
-          if (this.transition.activeTransitions > 0) return;
-          if (this.state === STATE.Playing) return;
-  
-          if (this.state === STATE.Menu) {
-            if (!tappedTwice) {
-              tappedTwice = true;
-              setTimeout(() => (tappedTwice = false), 300);
-              return false;
-            }
-  
-            this.game(SHOW);
-          } else if (this.state === STATE.Complete) {
-            this.complete(HIDE);
-          }
-        },
-        false
-      );
-    }, 2000);
+    this.doubleClickEvent();
 
     this.controls.onMove = () => {
       if (this.newGame) {
@@ -451,10 +428,37 @@ class Game {
 
   }
 
+  clickEvent = (event, tappedTwice) => {
+    if (this.transition.activeTransitions > 0) return;
+    if (this.state === STATE.Playing) return;
+
+    if (this.state === STATE.Menu) {
+      if (!tappedTwice) {
+        return false;
+      }
+
+      this.game(SHOW);
+    } else if (this.state === STATE.Complete) {
+      this.complete(HIDE);
+    }
+    return true;
+  }
+  doubleClickEvent() {
+    let tappedTwice = false;
+    this.gameClickHandler = (event) => {
+      if (!this.clickEvent(event, tappedTwice)) {
+        tappedTwice = true;
+        setTimeout(() => (tappedTwice = false), 300);
+      }
+    };
+
+    setTimeout(() => {
+      this.dom.game.addEventListener("click", this.gameClickHandler, false);
+    }, 2000);
+  }
+
   homeButtonEvent() {
-    console.log("Home button event");
     this.dom.buttons.home.onclick = (event) => {
-      console.log("Home button clicked", event);
       const customCube = document.querySelector("#custom-cube");
       if (customCube) customCube.style.display = "flex";
 
@@ -475,6 +479,14 @@ class Game {
     this.controls.scrambleCube(() => {
       this.controls.enable(); // Re-enable controls after scrambling is complete
     });
+    this.dom.buttons.next.style.pointerEvents = "none";
+    this.dom.buttons.prev.style.pointerEvents = "none";
+
+    console.log("scramble");
+    setTimeout(() => {
+      this.dom.buttons.next.style.pointerEvents = "none";
+      this.dom.buttons.prev.style.pointerEvents = "none";
+    }, 5500);
   }
 
   _getScrambleFromSolution(solution) {
@@ -542,7 +554,7 @@ class Game {
       const nextStep = solutionStepsArray[presentIndex] || "-";
       this.dom.texts.step.querySelector(
         "span"
-      ).textContent = `(${presentIndex}/${totalSteps}) Prev: ${prevStep} | Current: ${currStep} | Next: ${nextStep}`;
+      ).textContent = `(STEPS: ${presentIndex}/${totalSteps})   |    Prev: ${prevStep}    |    Current: ${currStep}    |    Next: ${nextStep}`;
 
       this.controls.disable();
       this.scrambler.scramble(presentStep);
@@ -619,8 +631,10 @@ class Game {
         // this.scramble = scramble;
         // this.scrambler.scramble(scramble);
         // this.controls.scrambleCube();
-        this.nextButtonEvent();
-        this.prevButtonEvent();
+        setTimeout(() => {
+          this.nextButtonEvent();
+          this.prevButtonEvent();
+        }, 1500);
         // this.homeButtonEvent();
       }
 
@@ -740,7 +754,6 @@ class Game {
       // Hide the prev/next buttons when the cube is solved
       this.dom.buttons.prev.style.opacity = "0";
       this.dom.buttons.next.style.opacity = "0";
-
       this.transition.buttons(BUTTONS.Complete, BUTTONS.Playing);
 
       this.state = STATE.Complete;
@@ -750,6 +763,10 @@ class Game {
       this.storage.clearGame();
       this.transition.zoom(STATE.Menu, 0);
       this.transition.elevate(SHOW);
+      if (this.gameClickHandler) {
+        this.dom.game.removeEventListener("click", this.gameClickHandler, false);
+        this.gameClickHandler = null;
+      }
 
       setTimeout(() => {
         this.transition.complete(SHOW, this.bestTime);
@@ -764,7 +781,6 @@ class Game {
       this.saved = false;
       this.transition.complete(HIDE, this.bestTime);
       this.transition.cube(HIDE);
-
       setTimeout(() => {
         this.cube.reset();
         this.confetti.stop();
@@ -775,6 +791,10 @@ class Game {
         this.dom.buttons.home.style.display = "flex"; // Make home button visible
         this.homeButtonEvent();
         this.transition.title(SHOW);
+        // this.doubleClickEvent();
+        setTimeout(() => {
+            this.doubleClickEvent();
+        }, 4000);
       }, 1000);
 
       return false;
