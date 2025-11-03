@@ -5575,10 +5575,6 @@
 	    this.gameClickHandler = (event) => {
 	      if (!this.clickEvent(event, tappedTwice)) {
 	        tappedTwice = true;
-	        // this.dom.buttons.next.style.pointerEvents = "all";
-	        // this.dom.buttons.prev.style.pointerEvents = "all";
-	        // this.dom.buttons.next.style.opacity = "1";
-	        // this.dom.buttons.prev.style.opacity = "1";
 	        setTimeout(() => (tappedTwice = false), 300);
 	      }
 	    };
@@ -5589,9 +5585,7 @@
 	  }
 
 	  homeButtonEvent() {
-	    console.log("Home button event");
 	    this.dom.buttons.home.onclick = (event) => {
-	      console.log("Home button clicked", event);
 	      const customCube = document.querySelector("#custom-cube");
 	      if (customCube) customCube.style.display = "flex";
 
@@ -5612,20 +5606,13 @@
 	    this.controls.scrambleCube(() => {
 	      this.controls.enable(); // Re-enable controls after scrambling is complete
 	    });
-	    // this.dom.game.style.pointerEvents = "none";
-	    this.dom.buttons.next.style.pointerEvents = "none";
-	    this.dom.buttons.prev.style.pointerEvents = "none";
-	    // this.dom.buttons.next.style.opacity = "0.5";
-	    // this.dom.buttons.prev.style.opacity = "0.5";
+	    // this.dom.buttons.next.style.pointerEvents = "none";
+	    // this.dom.buttons.prev.style.pointerEvents = "none";
 
 	    console.log("scramble");
 	    setTimeout(() => {
-	      console.log("scramble timeout");
-	      // this.dom.game.style.pointerEvents = "all";
-	      this.dom.buttons.next.style.pointerEvents = "none";
-	      this.dom.buttons.prev.style.pointerEvents = "none";
-	      // this.dom.buttons.next.style.opacity = "0.5";
-	      // this.dom.buttons.prev.style.opacity = "0.5";
+	      // this.dom.buttons.next.style.pointerEvents = "none";
+	      // this.dom.buttons.prev.style.pointerEvents = "none";
 	    }, 5500);
 	  }
 
@@ -5756,8 +5743,6 @@
 	    if (show) {
 	      if (!this.saved) {
 	        presentIndex = 0; // Reset for new solution
-	        // const solutionStepsArray = this.getNewOutput(solutionSteps);
-	        // this.solutionStepsArray = solutionStepsArray;
 	        this.dom.buttons.next.style.pointerEvents = "all";
 	        this.dom.buttons.next.style.opacity = "1";
 	        this.dom.buttons.prev.style.pointerEvents = "none";
@@ -5767,15 +5752,10 @@
 	          "span"
 	        ).textContent = `(0/${totalSteps}) Prev: - | Current: Start | Next: ${this.solutionStepsArray[0] || "-"
         }`;
-	        // scramble = this._getScrambleFromSolution(solutionSteps);
-	        // this.scramble = scramble;
-	        // this.scrambler.scramble(scramble);
-	        // this.controls.scrambleCube();
 	        setTimeout(() => {
 	          this.nextButtonEvent();
 	          this.prevButtonEvent();
 	        }, 1500);
-	        // this.homeButtonEvent();
 	      }
 
 	      const duration = this.saved
