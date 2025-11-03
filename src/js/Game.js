@@ -36,6 +36,7 @@ let presentIndex = 0;
 
 class Game {
   is3Dsetup = false;
+
   constructor() {
     this.setup2DCube();
     this.gameClickHandler = null;
@@ -215,6 +216,7 @@ class Game {
 
     // Print/validate cube state
     printButton.addEventListener("click", async () => {
+      console.log("printButton clicked");
       printButton.disabled = true;
       output.style.display = "block";
       const allColors = Object.values(cubeState).flat();
@@ -225,6 +227,7 @@ class Game {
         output.textContent = `❌ Cube must use exactly 6 colors.\nUsed: ${[
           ...usedColors,
         ].join(", ")}`;
+        output.style.opacity = 1;
         printButton.disabled = false;
         return;
       }
@@ -244,12 +247,10 @@ class Game {
         );
         output.textContent =
           `❌ Each color can only appear up to 9 times.\n` + msgs.join("\n");
+        output.style.opacity = 1;
         printButton.disabled = false;
         return;
       }
-
-      // output.textContent =
-      //   `✅ Cube is valid!\n` + JSON.stringify(cubeState, null, 2);
 
       const solverString = convertStateForSolver(cubeState);
 
@@ -261,8 +262,14 @@ class Game {
 
         // Use the game's scrambler and controls to animate the solution.
         if (!this.is3Dsetup) {
+          output.style.opacity = 0;
           this.setup3DCube();
         } else {
+          output.style.opacity = 0;
+          this.cube.reset();
+          this.cube.init();
+          this.scrambleInitLogic();
+
           const customCube = document.querySelector("#custom-cube");
           if (customCube) customCube.style.display = "none";
 
@@ -363,11 +370,6 @@ class Game {
     this.themes = new Themes(this);
     this.themeEditor = new ThemeEditor(this);
 
-    // this.homeButton = document.querySelector(".btn--home");
-    // console.log(this.homeButton);
-
-    // this.initActions();
-
     this.state = STATE.Menu;
     this.newGame = false;
     this.saved = false;
@@ -466,10 +468,12 @@ class Game {
       if (mainUi) mainUi.style.display = "none";
 
       this.dom.buttons.home.style.display = "none";
+      printButton.disabled = false;
     };
   }
 
   scrambleInitLogic() {
+    console.log("solution steps", solutionSteps)
     const solutionStepsArray = this.getNewOutput(solutionSteps);
     this.solutionStepsArray = solutionStepsArray;
     scramble = this._getScrambleFromSolution(solutionSteps);
@@ -477,16 +481,14 @@ class Game {
     this.controls.disable(); // Disable controls before scrambling
     this.scrambler.scramble(scramble);
     this.controls.scrambleCube(() => {
-      this.controls.enable(); // Re-enable controls after scrambling is complete
+      console.log("scramble complete")
+      setTimeout(() => {
+        this.controls.enable(); // Re-enable controls after scrambling is complete
+        this.doubleClickEvent();
+      }, 2500);
     });
-    // this.dom.buttons.next.style.pointerEvents = "none";
-    // this.dom.buttons.prev.style.pointerEvents = "none";
 
     console.log("scramble");
-    setTimeout(() => {
-      // this.dom.buttons.next.style.pointerEvents = "none";
-      // this.dom.buttons.prev.style.pointerEvents = "none";
-    }, 5500);
   }
 
   _getScrambleFromSolution(solution) {
@@ -757,7 +759,6 @@ class Game {
       this.transition.zoom(STATE.Menu, 0);
       this.transition.elevate(SHOW);
       if (this.gameClickHandler) {
-        this.dom.game.removeEventListener("click", this.gameClickHandler, false);
         this.gameClickHandler = null;
       }
 
@@ -784,10 +785,6 @@ class Game {
         this.dom.buttons.home.style.display = "flex"; // Make home button visible
         this.homeButtonEvent();
         this.transition.title(SHOW);
-        // this.doubleClickEvent();
-        setTimeout(() => {
-            this.doubleClickEvent();
-        }, 4000);
       }, 1000);
 
       return false;
