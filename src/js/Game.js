@@ -445,30 +445,39 @@ class Game {
     }
     return true;
   }
-  doubleClickEvent() {
-    let tappedTwice = false;
-    this.gameClickHandler = (event) => {
-      if (!this.clickEvent(event, tappedTwice)) {
-        tappedTwice = true;
-        setTimeout(() => (tappedTwice = false), 300);
-      }
-    };
 
+  doubleClickEvent() {
+    // Remove the previous click handler if it exists to prevent duplicates.
+    if (this.gameClickHandler) {
+      this.dom.game.removeEventListener("click", this.gameClickHandler, false);
+      this.gameClickHandler = null;
+    }
+
+    console.log("hello")
     setTimeout(() => {
+          console.log("hello there")
+      let tappedTwice = false;
+      this.gameClickHandler = (event) => {
+        if (!this.clickEvent(event, tappedTwice)) {
+          tappedTwice = true;
+          setTimeout(() => (tappedTwice = false), 300);
+        }
+      };
       this.dom.game.addEventListener("click", this.gameClickHandler, false);
     }, 2000);
   }
 
   homeButtonEvent() {
     this.dom.buttons.home.onclick = (event) => {
-      const customCube = document.querySelector("#custom-cube");
-      if (customCube) customCube.style.display = "flex";
+      // const customCube = document.querySelector("#custom-cube");
+      // if (customCube) customCube.style.display = "flex";
 
-      const mainUi = document.querySelector("#main-ui");
-      if (mainUi) mainUi.style.display = "none";
+      // const mainUi = document.querySelector("#main-ui");
+      // if (mainUi) mainUi.style.display = "none";
 
-      this.dom.buttons.home.style.display = "none";
-      printButton.disabled = false;
+      // this.dom.buttons.home.style.display = "none";
+      // printButton.disabled = false;\
+      window.location.reload();
     };
   }
 
@@ -483,8 +492,11 @@ class Game {
     this.controls.scrambleCube(() => {
       console.log("scramble complete")
       setTimeout(() => {
+        console.log("hello there is this worknig ")
         this.controls.enable(); // Re-enable controls after scrambling is complete
         this.doubleClickEvent();
+        // this.prevButtonEvent();
+        // this.nextButtonEvent();
       }, 2500);
     });
 
@@ -567,10 +579,9 @@ class Game {
         this.dom.buttons.next.style.pointerEvents = "all";
         this.dom.buttons.next.style.opacity = "1";
       });
-      setTimeout(() => {
-        // This timeout is now handled in the scrambleCube callback
-      }, 500);
     };
+
+    // this.dom.buttons.next.addEventListener("click", this.nextButtonHandler, false);
   }
 
   prevButtonEvent() {
@@ -608,10 +619,9 @@ class Game {
         this.dom.buttons.next.style.pointerEvents = "all";
         this.dom.buttons.next.style.opacity = "1";
       });
-      setTimeout(() => {
-        // This timeout is now handled in the scrambleCube callback
-      }, 500);
     };
+
+    // this.dom.buttons.prev.addEventListener("click", this.prevButtonHandler, false);
   }
 
   game(show) {
@@ -758,9 +768,6 @@ class Game {
       this.storage.clearGame();
       this.transition.zoom(STATE.Menu, 0);
       this.transition.elevate(SHOW);
-      if (this.gameClickHandler) {
-        this.gameClickHandler = null;
-      }
 
       setTimeout(() => {
         this.transition.complete(SHOW, this.bestTime);
@@ -775,6 +782,20 @@ class Game {
       this.saved = false;
       this.transition.complete(HIDE, this.bestTime);
       this.transition.cube(HIDE);
+      if (this.gameClickHandler) {
+        this.dom.game.removeEventListener("click", this.gameClickHandler, false);
+        this.gameClickHandler = null;
+      }
+
+      if (this.nextButtonHandler) {
+        // this.dom.buttons.next.removeEventListener("click", this.nextButtonHandler, false);
+        this.nextButtonHandler = null;
+      }
+
+      if (this.prevButtonHandler) {
+        // this.dom.buttons.prev.removeEventListener("click", this.prevButtonHandler, false);
+        this.prevButtonHandler = null;
+      }
       setTimeout(() => {
         this.cube.reset();
         this.confetti.stop();
