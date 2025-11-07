@@ -18,6 +18,11 @@ const STATE = {
   Prefs: 4,
   Theme: 5,
 };
+localStorage.removeItem("theCube_playing");
+localStorage.removeItem("theCube_savedState");
+localStorage.removeItem("theCube_time");
+localStorage.removeItem("theCube_preferences");
+localStorage.removeItem("theCube_theme");
 
 const BUTTONS = {
   Menu: ["prefs"],
@@ -254,32 +259,41 @@ class Game {
 
       const solverString = convertStateForSolver(cubeState);
 
-      const solution = await solveCube(solverString);
+      try {
+        const solution = await solveCube(solverString);
 
-      if (solution && typeof solution === "string") {
-        solutionSteps = solution;
-        output.textContent += `\nSolution: ${solution}`;
+        if (solution && typeof solution === "string") {
+          solutionSteps = solution;
+          output.textContent += `\nSolution: ${solution}`;
 
-        // Use the game's scrambler and controls to animate the solution.
-        if (!this.is3Dsetup) {
-          output.style.opacity = 0;
-          this.setup3DCube();
+          // Use the game's scrambler and controls to animate the solution.
+          if (!this.is3Dsetup) {
+            output.style.opacity = 0;
+            this.setup3DCube();
+          } else {
+            output.style.opacity = 0;
+            this.cube.reset();
+            this.cube.init();
+            this.scrambleInitLogic();
+
+            const customCube = document.querySelector("#custom-cube");
+            if (customCube) customCube.style.display = "none";
+
+            const mainUi = document.querySelector("#main-ui");
+            if (mainUi) mainUi.style.display = "block";
+          }
         } else {
-          output.style.opacity = 0;
-          this.cube.reset();
-          this.cube.init();
-          this.scrambleInitLogic();
-
-          const customCube = document.querySelector("#custom-cube");
-          if (customCube) customCube.style.display = "none";
-
-          const mainUi = document.querySelector("#main-ui");
-          if (mainUi) mainUi.style.display = "block";
-
+          output.textContent += "\n❌ No solution found.";
+          printButton.disabled = false;
         }
-      } else {
-        output.textContent += "\n❌ No solution found.";
+      } catch (error) {
+        console.log("error1",error)
+        output.textContent = `❌ ${error.message}`;
+        output.style.opacity = 1;
         printButton.disabled = false;
+        setTimeout(() => {
+          window.location.reload();
+        }, 3000);
       }
     });
 
@@ -453,9 +467,7 @@ class Game {
       this.gameClickHandler = null;
     }
 
-    console.log("hello")
     setTimeout(() => {
-          console.log("hello there")
       let tappedTwice = false;
       this.gameClickHandler = (event) => {
         if (!this.clickEvent(event, tappedTwice)) {
@@ -492,7 +504,6 @@ class Game {
     this.controls.scrambleCube(() => {
       console.log("scramble complete")
       setTimeout(() => {
-        console.log("hello there is this worknig ")
         this.controls.enable(); // Re-enable controls after scrambling is complete
         this.doubleClickEvent();
         // this.prevButtonEvent();
@@ -500,7 +511,6 @@ class Game {
       }, 2500);
     });
 
-    console.log("scramble");
   }
 
   _getScrambleFromSolution(solution) {
@@ -735,9 +745,10 @@ class Game {
 
       setTimeout(() => this.transition.preferences(SHOW), 1000);
       setTimeout(() => {
-        const gameCubeData = JSON.parse(
-          localStorage.getItem("theCube_savedState")
-        );
+        const gameCubeData = null;
+        // JSON.parse(
+        // localStorage.getItem("theCube_savedState")
+        // );
 
         if (!gameCubeData) {
           this.cube.resize(true);

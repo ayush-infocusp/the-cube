@@ -2,7 +2,8 @@ class Storage {
   constructor(game) {
     this.game = game;
 
-    const userVersion = localStorage.getItem("theCube_version");
+    const userVersion = null 
+    // localStorage.getItem("theCube_version");
 
     if (!userVersion || userVersion !== window.gameVersion) {
       this.clearGame();
