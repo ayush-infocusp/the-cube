@@ -141,6 +141,9 @@
           justify-content: space-around;
           align-items: center;
           max-height: 30px;
+          flex-wrap: wrap;
+          max-height: fit-content;
+          gap: 5px;
         ">
       <div id="colorButtons" style="height: 30px; display: contents"></div>
       <select id="faceSelector" style="width: 100px; height: 30px; font-size: 16px">
@@ -158,6 +161,18 @@
             height: 30px;
           ">
         ✅ Print Cube </button>
+      <input type="file" id="cubeImage" accept="image/*" style="
+            font-size: 12px;
+            max-width: 180px;
+          " />
+      <button id="detectColors" style="
+            padding: 5px 10px;
+            font-size: 16px;
+            height: 30px;
+            background: #4a4afc;
+            border: none;
+            color: white;
+          ">🎨 Detect Colors</button>
        <span id="output" style="
        text-wrap: wrap;
             display: none;

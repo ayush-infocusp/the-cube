@@ -5257,6 +5257,7 @@
 
 	  constructor() {
 	    this.setup2DCube();
+	    this.setupColorDetection();
 	    this.gameClickHandler = null;
 	  }
 
@@ -5266,7 +5267,7 @@
 	      D: "#ffef48", // yellow (Bottom)
 	      F: "#ef3923", // red (Front)
 	      R: "#41aac8", // blue (Right)
-	      B: "#ff8c0a", // orange (Back)
+	      B: "#ff8c0a", // orange (Back) 
 	      L: "#82ca38", // green (Left)
 	    };
 
@@ -5553,6 +5554,102 @@
 	    createStrip("adj-left");
 	    createStrip("adj-right");
 	    updateSurroundingFaces();
+	  }
+
+	  setupColorDetection() {
+	    const detectButton = document.getElementById('detectColors');
+	    const imageInput = document.getElementById('cubeImage');
+	    const output = document.getElementById('output');
+	    const faceSelector = document.getElementById('faceSelector');
+
+	    const API_KEY = 'AIzaSyBVG0ZuCFxq_koA8hMAGywCZV1IfQagd9E'; // Replace with your actual Gemini API key
+	    const API_URL = `https://generativelanguage.googleapis.com/v1beta/models:generateContent`;
+
+	    const colorMap = {
+	      white: '#fff7ff',
+	      yellow: '#ffef48',
+	      red: '#ef3923',
+	      blue: '#41aac8',
+	      orange: '#ff8c0a',
+	      green: '#82ca38',
+	      unknown: '#555555',
+	    };
+
+	    detectButton.addEventListener('click', async () => {
+	      if (!imageInput.files || imageInput.files.length === 0) {
+	        output.textContent = '❌ Please select an image file first.';
+	        output.style.opacity = 1;
+	        return;
+	      }
+
+	      const file = imageInput.files[0];
+	      const reader = new FileReader();
+
+	      reader.onloadend = async () => {
+	        const base64Data = reader.result.split(',')[1];
+
+	        output.textContent = 'Detecting colors...';
+	        output.style.opacity = 1;
+	        detectButton.disabled = true;
+
+	        const payload = {
+	          model: 'gemini-1.5-pro-latest',
+	          contents: [{
+	            parts: [{
+	                text: "Identify the 'front face' (the face most directly facing the camera). Determine the color of each of its 9 sub-stickers in a 3x3 grid. Use standard Rubik's cube colors: red, blue, green, yellow, orange, white. If a sticker is obscured or unclear, use 'unknown'. Respond with only a JSON object containing a 3x3 array representing the colors. For example: {\"face\":[[\"red\",\"white\",\"blue\"],[\"green\",\"red\",\"orange\"],[\"yellow\",\"white\",\"blue\"]]}"
+	              },
+	              {
+	                inline_data: {
+	                  mime_type: file.type,
+	                  data: base64Data,
+	                },
+	              },
+	            ],
+	          }, ],
+	        };
+
+	        try {
+	          const response = await fetch(API_URL, {
+	            method: 'POST',
+	            headers: {
+	              'Content-Type': 'application/json',
+	              'x-goog-api-key': API_KEY,
+	            },
+	            body: JSON.stringify(payload),
+	          });
+
+	          const data = await response.json();
+	          const textResponse = data.candidates[0].content.parts[0].text;
+	          const jsonResponse = JSON.parse(textResponse.replace(/```json|```/g, '').trim());
+	          const detectedColors = jsonResponse.face.flat();
+
+	          const currentFace = faceSelector.value;
+	          const faceContainer = document.getElementById('face');
+	          const cuboids = faceContainer.children;
+
+	          detectedColors.forEach((colorName, i) => {
+	            const hexColor = colorMap[colorName.toLowerCase()] || '#555555';
+	            this.cubeState[currentFace][i] = hexColor;
+	            if (cuboids[i]) {
+	              cuboids[i].style.backgroundColor = hexColor;
+	            }
+	          });
+
+	          output.textContent = '✅ Colors detected and applied!';
+	        } catch (error) {
+	          console.error('Error detecting colors:', error);
+	          let errorMessage = '❌ Error detecting colors.';
+	          if (error.response && error.response.status) {
+	            errorMessage += ` Status: ${error.response.status}.`;
+	          }
+	          output.textContent = `${errorMessage} Check console for details.`;
+	        } finally {
+	          detectButton.disabled = false;
+	        }
+	      };
+
+	      reader.readAsDataURL(file);
+	    });
 	  }
 
 	  setup3DCube() {
