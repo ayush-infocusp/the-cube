@@ -3,12 +3,8 @@ class Storage {
     this.game = game;
 
     const userVersion = null 
-    // localStorage.getItem("theCube_version");
-
-    if (!userVersion || userVersion !== window.gameVersion) {
       this.clearGame();
       this.clearPreferences();
-    }
   }
 
   init() {
@@ -74,7 +70,7 @@ class Storage {
       colors: this.game.themes.colors,
     };
 
-    localStorage.setItem("theCube_preferences", JSON.stringify(preferences));
+    // localStorage.setItem("theCube_preferences", JSON.stringify(preferences));
   }
 
   clearPreferences() {

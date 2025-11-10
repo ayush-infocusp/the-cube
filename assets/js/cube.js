@@ -2620,12 +2620,8 @@
 	class Storage {
 	  constructor(game) {
 	    this.game = game;
-	    // localStorage.getItem("theCube_version");
-
-	    {
 	      this.clearGame();
 	      this.clearPreferences();
-	    }
 	  }
 
 	  init() {
@@ -2682,16 +2678,16 @@
 	  }
 
 	  savePreferences() {
-	    const preferences = {
+	    ({
 	      cubeSize: this.game.cube.size,
 	      flipConfig: this.game.controls.flipConfig,
 	      dificulty: this.game.scrambler.dificulty,
 	      fov: this.game.world.fov,
 	      theme: this.game.themes.theme,
 	      colors: this.game.themes.colors,
-	    };
+	    });
 
-	    localStorage.setItem("theCube_preferences", JSON.stringify(preferences));
+	    // localStorage.setItem("theCube_preferences", JSON.stringify(preferences));
 	  }
 
 	  clearPreferences() {
