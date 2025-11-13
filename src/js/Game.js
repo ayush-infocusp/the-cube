@@ -288,7 +288,7 @@ class Game {
           printButton.disabled = false;
         }
       } catch (error) {
-        console.log("error1",error)
+        console.log("error1", error)
         output.textContent = `❌ ${error.message}`;
         output.style.opacity = 1;
         printButton.disabled = false;
@@ -349,7 +349,7 @@ class Game {
     const output = document.getElementById('output');
     const faceSelector = document.getElementById('faceSelector');
 
-    const API_KEY = 'AIzaSyBVG0ZuCFxq_koA8hMAGywCZV1IfQagd9E'; // Replace with your actual Gemini API key
+    const API_KEY = _env.G_API_KEY; // This will be replaced by Rollup
     const API_URL = `https://generativelanguage.googleapis.com/v1beta/models:generateContent`;
 
     const colorMap = {
@@ -390,16 +390,16 @@ class Game {
           model: 'gemini-1.5-pro-latest',
           contents: [{
             parts: [{
-                text: "Identify the 'front face' (the face most directly facing the camera). Determine the color of each of its 9 sub-stickers in a 3x3 grid. Use standard Rubik's cube colors: red, blue, green, yellow, orange, white. If a sticker is obscured or unclear, use 'unknown'. Respond with only a JSON object containing a 3x3 array representing the colors. For example: {\"face\":[[\"red\",\"white\",\"blue\"],[\"green\",\"red\",\"orange\"],[\"yellow\",\"white\",\"blue\"]]}"
+              text: "Identify the 'front face' (the face most directly facing the camera). Determine the color of each of its 9 sub-stickers in a 3x3 grid. Use standard Rubik's cube colors: red, blue, green, yellow, orange, white. If a sticker is obscured or unclear, use 'unknown'. Respond with only a JSON object containing a 3x3 array representing the colors. For example: {\"face\":[[\"red\",\"white\",\"blue\"],[\"green\",\"red\",\"orange\"],[\"yellow\",\"white\",\"blue\"]]}"
+            },
+            {
+              inline_data: {
+                mime_type: file.type,
+                data: base64Data,
               },
-              {
-                inline_data: {
-                  mime_type: file.type,
-                  data: base64Data,
-                },
-              },
+            },
             ],
-          }, ],
+          },],
         };
 
         try {
