@@ -481,14 +481,6 @@ class Game {
 
   homeButtonEvent() {
     this.dom.buttons.home.onclick = (event) => {
-      // const customCube = document.querySelector("#custom-cube");
-      // if (customCube) customCube.style.display = "flex";
-
-      // const mainUi = document.querySelector("#main-ui");
-      // if (mainUi) mainUi.style.display = "none";
-
-      // this.dom.buttons.home.style.display = "none";
-      // printButton.disabled = false;\
       window.location.reload();
     };
   }
@@ -506,8 +498,6 @@ class Game {
       setTimeout(() => {
         this.controls.enable(); // Re-enable controls after scrambling is complete
         this.doubleClickEvent();
-        // this.prevButtonEvent();
-        // this.nextButtonEvent();
       }, 2500);
     });
 
@@ -528,7 +518,6 @@ class Game {
   }
   getNewOutput(sol) {
     // The solution string is space-separated, so we can just split it.
-    // return sol.split(' ').filter(move => move !== '');
     let newData = [];
     [...sol].map((data, index) => {
       let st = "";
@@ -590,8 +579,6 @@ class Game {
         this.dom.buttons.next.style.opacity = "1";
       });
     };
-
-    // this.dom.buttons.next.addEventListener("click", this.nextButtonHandler, false);
   }
 
   prevButtonEvent() {
@@ -630,8 +617,6 @@ class Game {
         this.dom.buttons.next.style.opacity = "1";
       });
     };
-
-    // this.dom.buttons.prev.addEventListener("click", this.prevButtonHandler, false);
   }
 
   game(show) {
@@ -746,10 +731,6 @@ class Game {
       setTimeout(() => this.transition.preferences(SHOW), 1000);
       setTimeout(() => {
         const gameCubeData = null;
-        // JSON.parse(
-        // localStorage.getItem("theCube_savedState")
-        // );
-
         if (!gameCubeData) {
           this.cube.resize(true);
           return;
@@ -799,12 +780,10 @@ class Game {
       }
 
       if (this.nextButtonHandler) {
-        // this.dom.buttons.next.removeEventListener("click", this.nextButtonHandler, false);
         this.nextButtonHandler = null;
       }
 
       if (this.prevButtonHandler) {
-        // this.dom.buttons.prev.removeEventListener("click", this.prevButtonHandler, false);
         this.prevButtonHandler = null;
       }
       setTimeout(() => {

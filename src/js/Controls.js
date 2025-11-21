@@ -47,8 +47,8 @@ class Controls {
 
     this.game.world.scene.add(this.edges);
 
-    this.onSolved = () => {};
-    this.onMove = () => {};
+    this.onSolved = () => { };
+    this.onMove = () => { };
 
     this.momentum = [];
 
@@ -92,33 +92,17 @@ class Controls {
         );
       }
 
-      // if (edgeIntersect !== false && this.dragIntersect !== false) {
-      //   this.dragNormal = edgeIntersect.face.normal.round();
-      //   this.flipType = "layer";
 
-      //   this.attach(this.helper, this.edges);
+      this.dragNormal = new THREE.Vector3(0, 0, 1);
+      this.flipType = "cube";
 
-      //   this.helper.rotation.set(0, 0, 0);
-      //   this.helper.position.set(0, 0, 0);
-      //   this.helper.lookAt(this.dragNormal);
-      //   this.helper.translateZ(0.5);
-      //   this.helper.updateMatrixWorld();
-
-      //   this.detach(this.helper, this.edges);
-      // } else {
-        this.dragNormal = new THREE.Vector3(0, 0, 1);
-        // this.flipType = "none"; // was 'cube'
-        this.flipType = "cube";
-
-        this.helper.position.set(0, 0, 0);
-        this.helper.rotation.set(0, Math.PI / 4, 0);
-        this.helper.updateMatrixWorld();
-      // }
+      this.helper.position.set(0, 0, 0);
+      this.helper.rotation.set(0, Math.PI / 4, 0);
+      this.helper.updateMatrixWorld();
 
       let planeIntersect = this.getIntersect(
         position.current,
         this.helper,
-        // this.helper, 
         false
       );
       if (planeIntersect === false) return;
@@ -129,7 +113,6 @@ class Controls {
     };
 
     this.draggable.onDragMove = (position) => {
-      // if (this.flipType === "none") return;
       if (this.scramble !== null) return;
       if (
         this.state === STILL ||
@@ -198,7 +181,6 @@ class Controls {
     };
 
     this.draggable.onDragEnd = (position) => {
-      // if (this.flipType === "none") return;
       if (this.scramble !== null) return;
       if (this.state !== ROTATING) {
         this.gettingDrag = false;
@@ -214,8 +196,8 @@ class Controls {
 
       const angle = flip
         ? this.roundAngle(
-            this.flipAngle + Math.sign(this.flipAngle) * (Math.PI / 4)
-          )
+          this.flipAngle + Math.sign(this.flipAngle) * (Math.PI / 4)
+        )
         : this.roundAngle(this.flipAngle);
 
       const delta = angle - this.flipAngle;
@@ -243,7 +225,7 @@ class Controls {
 
     const easing = this.flipEasings[config];
     const duration = this.flipSpeeds[config];
-    const bounce = config == 2 ? this.bounceCube() : () => {};
+    const bounce = config == 2 ? this.bounceCube() : () => { };
 
     this.rotationTween = new Tween({
       easing: easing,
@@ -393,7 +375,7 @@ class Controls {
   scrambleCube(onComplete) {
     if (this.scramble == null) {
       this.scramble = this.game.scrambler;
-      this.onScrambleComplete = onComplete || (() => {});
+      this.onScrambleComplete = onComplete || (() => { });
     }
 
     const converted = this.scramble.converted;

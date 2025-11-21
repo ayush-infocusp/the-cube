@@ -69,8 +69,6 @@ class Storage {
       theme: this.game.themes.theme,
       colors: this.game.themes.colors,
     };
-
-    // localStorage.setItem("theCube_preferences", JSON.stringify(preferences));
   }
 
   clearPreferences() {

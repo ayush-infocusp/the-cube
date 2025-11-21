@@ -1217,8 +1217,8 @@
 
 	    this.game.world.scene.add(this.edges);
 
-	    this.onSolved = () => {};
-	    this.onMove = () => {};
+	    this.onSolved = () => { };
+	    this.onMove = () => { };
 
 	    this.momentum = [];
 
@@ -1262,33 +1262,17 @@
 	        );
 	      }
 
-	      // if (edgeIntersect !== false && this.dragIntersect !== false) {
-	      //   this.dragNormal = edgeIntersect.face.normal.round();
-	      //   this.flipType = "layer";
 
-	      //   this.attach(this.helper, this.edges);
+	      this.dragNormal = new THREE.Vector3(0, 0, 1);
+	      this.flipType = "cube";
 
-	      //   this.helper.rotation.set(0, 0, 0);
-	      //   this.helper.position.set(0, 0, 0);
-	      //   this.helper.lookAt(this.dragNormal);
-	      //   this.helper.translateZ(0.5);
-	      //   this.helper.updateMatrixWorld();
-
-	      //   this.detach(this.helper, this.edges);
-	      // } else {
-	        this.dragNormal = new THREE.Vector3(0, 0, 1);
-	        // this.flipType = "none"; // was 'cube'
-	        this.flipType = "cube";
-
-	        this.helper.position.set(0, 0, 0);
-	        this.helper.rotation.set(0, Math.PI / 4, 0);
-	        this.helper.updateMatrixWorld();
-	      // }
+	      this.helper.position.set(0, 0, 0);
+	      this.helper.rotation.set(0, Math.PI / 4, 0);
+	      this.helper.updateMatrixWorld();
 
 	      let planeIntersect = this.getIntersect(
 	        position.current,
 	        this.helper,
-	        // this.helper, 
 	        false
 	      );
 	      if (planeIntersect === false) return;
@@ -1299,7 +1283,6 @@
 	    };
 
 	    this.draggable.onDragMove = (position) => {
-	      // if (this.flipType === "none") return;
 	      if (this.scramble !== null) return;
 	      if (
 	        this.state === STILL ||
@@ -1368,7 +1351,6 @@
 	    };
 
 	    this.draggable.onDragEnd = (position) => {
-	      // if (this.flipType === "none") return;
 	      if (this.scramble !== null) return;
 	      if (this.state !== ROTATING) {
 	        this.gettingDrag = false;
@@ -1384,8 +1366,8 @@
 
 	      const angle = flip
 	        ? this.roundAngle(
-	            this.flipAngle + Math.sign(this.flipAngle) * (Math.PI / 4)
-	          )
+	          this.flipAngle + Math.sign(this.flipAngle) * (Math.PI / 4)
+	        )
 	        : this.roundAngle(this.flipAngle);
 
 	      const delta = angle - this.flipAngle;
@@ -1413,7 +1395,7 @@
 
 	    const easing = this.flipEasings[config];
 	    const duration = this.flipSpeeds[config];
-	    const bounce = config == 2 ? this.bounceCube() : () => {};
+	    const bounce = config == 2 ? this.bounceCube() : () => { };
 
 	    this.rotationTween = new Tween({
 	      easing: easing,
@@ -1563,7 +1545,7 @@
 	  scrambleCube(onComplete) {
 	    if (this.scramble == null) {
 	      this.scramble = this.game.scrambler;
-	      this.onScrambleComplete = onComplete || (() => {});
+	      this.onScrambleComplete = onComplete || (() => { });
 	    }
 
 	    const converted = this.scramble.converted;
@@ -2686,8 +2668,6 @@
 	      theme: this.game.themes.theme,
 	      colors: this.game.themes.colors,
 	    });
-
-	    // localStorage.setItem("theCube_preferences", JSON.stringify(preferences));
 	  }
 
 	  clearPreferences() {
@@ -5690,14 +5670,6 @@
 
 	  homeButtonEvent() {
 	    this.dom.buttons.home.onclick = (event) => {
-	      // const customCube = document.querySelector("#custom-cube");
-	      // if (customCube) customCube.style.display = "flex";
-
-	      // const mainUi = document.querySelector("#main-ui");
-	      // if (mainUi) mainUi.style.display = "none";
-
-	      // this.dom.buttons.home.style.display = "none";
-	      // printButton.disabled = false;\
 	      window.location.reload();
 	    };
 	  }
@@ -5715,8 +5687,6 @@
 	      setTimeout(() => {
 	        this.controls.enable(); // Re-enable controls after scrambling is complete
 	        this.doubleClickEvent();
-	        // this.prevButtonEvent();
-	        // this.nextButtonEvent();
 	      }, 2500);
 	    });
 
@@ -5737,7 +5707,6 @@
 	  }
 	  getNewOutput(sol) {
 	    // The solution string is space-separated, so we can just split it.
-	    // return sol.split(' ').filter(move => move !== '');
 	    let newData = [];
 	    [...sol].map((data, index) => {
 	      let st = "";
@@ -5799,8 +5768,6 @@
 	        this.dom.buttons.next.style.opacity = "1";
 	      });
 	    };
-
-	    // this.dom.buttons.next.addEventListener("click", this.nextButtonHandler, false);
 	  }
 
 	  prevButtonEvent() {
@@ -5839,8 +5806,6 @@
 	        this.dom.buttons.next.style.opacity = "1";
 	      });
 	    };
-
-	    // this.dom.buttons.prev.addEventListener("click", this.prevButtonHandler, false);
 	  }
 
 	  game(show) {
@@ -5954,10 +5919,6 @@
 
 	      setTimeout(() => this.transition.preferences(SHOW), 1000);
 	      setTimeout(() => {
-	        // JSON.parse(
-	        // localStorage.getItem("theCube_savedState")
-	        // );
-
 	        {
 	          this.cube.resize(true);
 	          return;
@@ -6005,12 +5966,10 @@
 	      }
 
 	      if (this.nextButtonHandler) {
-	        // this.dom.buttons.next.removeEventListener("click", this.nextButtonHandler, false);
 	        this.nextButtonHandler = null;
 	      }
 
 	      if (this.prevButtonHandler) {
-	        // this.dom.buttons.prev.removeEventListener("click", this.prevButtonHandler, false);
 	        this.prevButtonHandler = null;
 	      }
 	      setTimeout(() => {
